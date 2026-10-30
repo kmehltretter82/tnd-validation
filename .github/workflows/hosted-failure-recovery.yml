@@ -1,0 +1,109 @@
+name: hosted-failure-recovery
+run-name: 'Failure recovery: ${{ inputs.mode }}'
+
+# Test-repository overlay, not part of tndlib: holds real quota mounts and a running
+# container, ends abruptly, and requires the independent recovery step to reconcile.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        required: true
+        type: choice
+        options: [sigkill-owner, cancel, kill-worker]
+
+permissions:
+  contents: read
+
+jobs:
+  hold:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Prepare
+        run: |
+          mkdir -p reports "$RUNNER_TEMP/held"
+          docker pull -q ubuntu@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+          cat > "$RUNNER_TEMP/hold.py" <<'PY'
+          import json, subprocess, sys, time, uuid
+          from pathlib import Path
+          sys.path.insert(0, ".")
+          from audit.resource_boundary import ExperimentalBoundary, Limits
+          limits = Limits(1024 * 1024, 64)
+          owner = ExperimentalBoundary(Path(sys.argv[1]), limits, limits)
+          owner.create()
+          name = "tnd-audit-" + uuid.uuid4().hex
+          owner.record_container(name)
+          subprocess.run(
+              ["docker", "run", "-d", "--name", name, "--network", "none",
+               "--mount", f"type=bind,src={owner.root / 'build'},dst=/build",
+               "ubuntu@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac",
+               "sleep", "900"],
+              check=True, stdout=subprocess.DEVNULL,
+          )
+          Path("reports/held.json").write_text(json.dumps({"root": str(owner.root), "container": name}))
+          print("HOLDING", owner.root, name, flush=True)
+          time.sleep(900)
+          PY
+
+      - name: Hold until the owner is killed
+        if: inputs.mode == 'sigkill-owner'
+        continue-on-error: true
+        run: |
+          python3 "$RUNNER_TEMP/hold.py" "$RUNNER_TEMP/held" &
+          owner=$!
+          for _ in $(seq 60); do [ -s reports/held.json ] && break; sleep 1; done
+          kill -9 "$owner"
+
+      - name: Hold until the run is cancelled
+        if: inputs.mode == 'cancel'
+        run: python3 "$RUNNER_TEMP/hold.py" "$RUNNER_TEMP/held"
+
+      - name: Hold, then kill the runner worker
+        if: inputs.mode == 'kill-worker'
+        run: |
+          python3 "$RUNNER_TEMP/hold.py" "$RUNNER_TEMP/held" &
+          for _ in $(seq 60); do [ -s reports/held.json ] && break; sleep 1; done
+          sudo -n pkill -9 -f Runner.Worker
+
+      - name: Record what survived
+        if: always()
+        run: |
+          {
+            echo "mounts: $(findmnt -rn -o TARGET | grep -c tnd-boundary)"
+            echo "containers: $(docker ps -q | wc -l)"
+            ls -A "$RUNNER_TEMP/held"
+          } 2>&1 | tee reports/before.txt
+
+      - name: Reconcile quota mounts from any abnormal exit
+        id: recovery
+        if: always()
+        run: |
+          set -o pipefail
+          python3 -m audit.resource_recovery --parent "$RUNNER_TEMP/held" | tee reports/recovery.json
+
+      - name: Require that nothing remains
+        if: always()
+        run: |
+          {
+            echo "mounts: $(findmnt -rn -o TARGET | grep -c tnd-boundary)"
+            echo "containers: $(docker ps -aq | wc -l)"
+            echo "scratch: $(ls -A "$RUNNER_TEMP/held" | wc -l)"
+          } 2>&1 | tee reports/after.txt
+          grep -qx 'mounts: 0' reports/after.txt
+          grep -qx 'containers: 0' reports/after.txt
+          grep -qx 'scratch: 0' reports/after.txt
+
+      - name: Retain the reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: failure-recovery-${{ inputs.mode }}
+          path: reports/
+          if-no-files-found: error
+          retention-days: 30

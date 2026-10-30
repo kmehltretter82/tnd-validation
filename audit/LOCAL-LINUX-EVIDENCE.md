@@ -1,15 +1,35 @@
-# Local native-Linux evidence, 2026-10-30
+# Native-Linux evidence, 2026-10-30
 
-**Development evidence only.** This came from an expendable QEMU virtual machine,
-not the intended GitHub-hosted `ubuntu-24.04` x86-64 runner. It selects no budget,
-changes no certification flag, and must not be cited as production validation.
-Everything below must be repeated on the target runner.
+**Development evidence only.** It selects no budget, changes no certification flag,
+and must not be cited as production validation. Most of this came from an expendable
+QEMU virtual machine; "Hosted runner" below records the repeat on the target runner.
 
 Environment: Ubuntu 24.04.5, Linux 6.8.0-147-generic, aarch64, 3 vCPU, 3 GiB RAM, no
 swap, Docker 29.1.3 with overlayfs, cgroup v2, and its built-in seccomp profile.
 Lean 4.35.0 came from `audit/install_lean.py`.
 
-## Observed
+## Hosted runner
+
+One `workflow_dispatch` run on GitHub's `ubuntu-24.04` in the separate test repository
+`kmehltretter82/tnd-validation` (commit `85744f0`, run `41133552468`), with the same
+three harnesses: Linux 7.0.0-1017-azure, x86-64, 4 vCPU, 16 GiB RAM, **3 GiB swap**,
+Docker 28.0.4, overlay2, cgroup v2, built-in seccomp, `sudo` available.
+
+- The x86-64 Lean archive installed through the verifier.
+- `RUNNER_TEMP` (mode 755, owned by `runner`) passed the parent-chain check.
+- Every boundary, tamper, recovery, and container-limit check held, all 15 hostile
+  sources were rejected, and all 4 Git cases passed. The recovery step found nothing
+  left to reconcile.
+- Parses took 2.5 to 7.9 s against the 90 s timeout.
+- The clean library build took 1.1 s and 0.47 GiB; the checker and exporter took
+  10.9 s and 1.6 GiB.
+- `maintainer-regression` passed its whole matrix, and `audit-main` stopped at the
+  certification guard with every later step skipped. Both ran on that commit.
+
+The swap matters for budgets: tmpfs may swap, so a quota mount's bytes are not all
+held in RAM here, unlike on the VM.
+
+## Observed on the VM
 
 Reproduce these with `tests/audit/linux_boundary_smoke.py`,
 `tests/audit/linux_container_limits.py`, and `tests/audit/linux_git_integration.py`.
@@ -42,13 +62,14 @@ describe today's small corpus and say little about an adversarial or larger buil
 
 ## Not established
 
-- Anything about x86-64 or the hosted runner, its mount namespace, kernel, or sudo.
-- `RUNNER_TEMP` passing the parent-chain check; a group-writable parent is refused.
-- Real Actions behavior: cancellation, the `if: always()` step, and the merge lane.
+- Real Actions failure behavior: a cancelled or killed job, and the `if: always()`
+  step recovering real mounts. On the hosted run it only found nothing to do.
+- The merge lane.
+- Host memory under simultaneous tmpfs use, now on a runner that has swap.
+- Repeatability: the hosted result is a single run.
 - Filtered-fetch or server over-delivery.
 - `audit/run.py verify` end to end. Its guard correctly refuses while the flags are
   false, and it must not be bypassed to obtain this result.
-- Host memory under simultaneous tmpfs use. tmpfs may swap, and this VM had none.
 - Build-stage CPU: the build profile has `--cpus` but no CPU-time ulimit. `command()`
   in `audit/run.py` sets a 900 s wall-clock limit per stage and the named container
   is then force-removed, but that path was read in the code, not observed firing.
