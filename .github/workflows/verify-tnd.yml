@@ -52,7 +52,7 @@ jobs:
           --quota-parent "$RUNNER_TEMP" --output audit/output/audit.json
       - name: Reconcile quota mounts from any abnormal exit
         if: always()
-        run: python3 -m audit.resource_recovery --parent "$RUNNER_TEMP"
+        run: python3 -m audit.resource_recovery --parent "$RUNNER_TEMP" --terminate-owner
       - name: Retain commit-bound evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

@@ -39,13 +39,20 @@ jobs:
           owner.create()
           name = "tnd-audit-" + uuid.uuid4().hex
           owner.record_container(name)
-          subprocess.run(
-              ["docker", "run", "-d", "--name", name, "--network", "none",
+          # Attached and in its own session, as command() runs production containers.
+          subprocess.Popen(
+              ["docker", "run", "--name", name, "--network", "none",
                "--mount", f"type=bind,src={owner.root / 'build'},dst=/build",
                "ubuntu@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac",
                "sleep", "900"],
-              check=True, stdout=subprocess.DEVNULL,
+              start_new_session=True, stdout=subprocess.DEVNULL,
           )
+          for _ in range(60):
+              listed = subprocess.run(["docker", "ps", "-q", "--filter", f"name=^/{name}$"],
+                                      capture_output=True, text=True, check=True).stdout
+              if listed.strip():
+                  break
+              time.sleep(1)
           Path("reports/held.json").write_text(json.dumps({"root": str(owner.root), "container": name}))
           print("HOLDING", owner.root, name, flush=True)
           time.sleep(900)
@@ -78,6 +85,7 @@ jobs:
             echo "mounts: $(findmnt -rn -o TARGET | grep -c tnd-boundary)"
             echo "containers: $(docker ps -q | wc -l)"
             ls -A "$RUNNER_TEMP/held"
+            ps -eo pid,ppid,sid,stat,etimes,args | grep -E 'hold\.py|docker run' | grep -v grep
           } 2>&1 | tee reports/before.txt
 
       - name: Reconcile quota mounts from any abnormal exit
@@ -85,7 +93,8 @@ jobs:
         if: always()
         run: |
           set -o pipefail
-          python3 -m audit.resource_recovery --parent "$RUNNER_TEMP/held" | tee reports/recovery.json
+          python3 -m audit.resource_recovery --parent "$RUNNER_TEMP/held" --terminate-owner \
+            | tee reports/recovery.json
 
       - name: Require that nothing remains
         if: always()

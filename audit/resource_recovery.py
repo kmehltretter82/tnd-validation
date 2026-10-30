@@ -13,6 +13,7 @@ import argparse
 import json
 import os
 import re
+import signal
 import stat
 import subprocess
 import sys
@@ -84,12 +85,35 @@ def read_lease(path: Path, parent: Path) -> dict:
     return lease
 
 
-def require_owner_gone(lease: dict) -> None:
-    """Never reconcile beneath a live job; an unknowable start time is not gone."""
-    if lease["owner_start"] is None:
+def require_owner_gone(lease: dict, wait: float, *, terminate: bool = False) -> None:
+    """Never reconcile beneath a live job; an unknowable start time is not gone.
+
+    A cancelled Actions step can outlive its cancellation, so the owner gets a
+    bounded wait. `terminate` is for a workflow's own `if: always()` step, where a
+    still-running owner is by definition an orphan of a step that has ended.
+    """
+    pid, start = lease["owner_pid"], lease["owner_start"]
+    if start is None:
         raise Refused("lease has no owner start time")
-    if _process_start(lease["owner_pid"]) == lease["owner_start"]:
-        raise Refused("lease owner is still running")
+
+    def await_exit(limit: float) -> bool:
+        deadline = time.monotonic() + limit
+        while _process_start(pid) == start:
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(min(1.0, limit))
+        return True
+
+    if await_exit(wait):
+        return
+    if terminate:
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            return
+        if await_exit(max(wait, 5.0)):
+            return
+    raise Refused("lease owner is still running")
 
 
 def processes_naming(root: Path) -> list[int]:
@@ -146,7 +170,9 @@ def release_mounts(root: Path) -> None:
             raise Refused(f"{mount.path.name} did not detach")
 
 
-def recover(lease_path: Path, parent: Path, *, wait: float = 30.0) -> str:
+def recover(
+    lease_path: Path, parent: Path, *, wait: float = 30.0, terminate_owner: bool = False,
+) -> str:
     lease = read_lease(lease_path, parent)
     root = Path(lease["root"])
     if not root.exists() and not root.is_symlink():
@@ -158,7 +184,11 @@ def recover(lease_path: Path, parent: Path, *, wait: float = 30.0) -> str:
     if (not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid()
             or [info.st_dev, info.st_ino] != lease["root_identity"]):
         raise Refused("root identity differs from its lease")
-    require_owner_gone(lease)
+    require_owner_gone(lease, wait, terminate=terminate_owner)
+    # An attached `docker run` client names the root and lives as long as its
+    # container, so removal must come first. Confirm again afterwards: a client
+    # caught mid-launch could otherwise create the container after the first pass.
+    remove_containers(lease["containers"])
     await_helpers(root, wait)
     remove_containers(lease["containers"])
     release_mounts(root)
@@ -175,6 +205,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--parent", required=True, type=Path)
     parser.add_argument("--wait", type=float, default=30.0)
+    parser.add_argument(
+        "--terminate-owner", action="store_true",
+        help="kill a surviving owner; only for a workflow's own always() step",
+    )
     args = parser.parse_args(argv)
     if sys.platform != "linux" or os.geteuid() == 0:
         print("recovery requires an unprivileged Linux host", file=sys.stderr)
@@ -191,7 +225,9 @@ def main(argv: list[str] | None = None) -> int:
     results = {}
     for lease_path in sorted(parent.glob("tnd-boundary-*.lease")):
         try:
-            results[lease_path.name] = recover(lease_path, parent, wait=args.wait)
+            results[lease_path.name] = recover(
+                lease_path, parent, wait=args.wait, terminate_owner=args.terminate_owner,
+            )
         except (Refused, OSError, ValueError, subprocess.SubprocessError) as error:
             results[lease_path.name] = f"refused: {error}"
     print(json.dumps(results, indent=2, sort_keys=True))

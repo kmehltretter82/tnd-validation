@@ -162,21 +162,24 @@ Before its first mount, the boundary atomically writes `<root>.lease` beside the
 private root, naming that root's identity, the owner's PID and kernel start time,
 and each container before it starts. Leases live outside the mounts, so candidate
 containers cannot reach them. An `if: always()` step in every quota-using workflow
-runs `python3 -m audit.resource_recovery --parent "$RUNNER_TEMP"`, standard
-library only, and a job whose recovery refuses fails.
+runs `python3 -m audit.resource_recovery --parent "$RUNNER_TEMP" --terminate-owner`,
+standard library only, and a job whose recovery refuses fails.
 
 It handles only leased resources, in this order, and refuses (retaining everything
 for host disposal) on any mismatch: the lease is a private regular file naming a
-direct child of the parent with the recorded identity; the owner is gone; no process
-argument names the root after a bounded wait; every named container is confirmed
-absent; each mountpoint holds at most one tmpfs with the required flags and nothing
+direct child of the parent with the recorded identity; the owner has exited within a
+bounded wait or, with `--terminate-owner`, was killed by its exact PID and start time;
+every named container is removed; no process argument names the root after a bounded
+wait; the containers are confirmed absent again; each mountpoint holds at most one tmpfs with the required flags and nothing
 nested. Only then does it unmount, confirm detachment, and remove the empty paths.
 
 The process scan is evidence, not proof. It sees every process's arguments only
 without `hidepid`, and a descendant that rewrites its arguments or a helper that
 started and stopped between scans is not distinguished. The argument holds because
 only the dead owner can launch a helper for that root. Host disposal remains the
-final layer. `tests/audit/linux_boundary_smoke.py` exercises this with real mounts.
+final layer. Only a hosted runner's single-job VM may use `--terminate-owner`.
+`tests/audit/linux_boundary_smoke.py` exercises this with real mounts, and a real run
+cancellation first exposed the need for the owner handling and this ordering.
 
 ## Acceptance tests before enabling certification
 

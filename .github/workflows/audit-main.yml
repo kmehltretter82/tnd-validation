@@ -35,7 +35,7 @@ jobs:
           --quota-parent "$RUNNER_TEMP" --output audit/output/audit.json
       - name: Reconcile quota mounts from any abnormal exit
         if: always()
-        run: python3 -m audit.resource_recovery --parent "$RUNNER_TEMP"
+        run: python3 -m audit.resource_recovery --parent "$RUNNER_TEMP" --terminate-owner
       - name: Bind report to this trusted workflow attempt
         env:
           AUDIT_REPOSITORY: ${{ github.repository }}

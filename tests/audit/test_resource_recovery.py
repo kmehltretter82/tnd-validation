@@ -108,8 +108,86 @@ class RecoveryTests(unittest.TestCase):
                          lambda argv, **kw: (order.append(argv[1]), original(argv, **kw))[1]),
         ):
             self.recover()
-        self.assertEqual(order[:2], ["rm", "container"])
-        self.assertEqual(set(order[2:]), {"umount"})
+        self.assertEqual(order[:4], ["rm", "container", "rm", "container"])
+        self.assertEqual(set(order[4:]), {"umount"})
+
+    def test_attached_client_exits_only_after_its_container_is_removed(self):
+        self.write_lease(containers=[CONTAINER])
+        removed = []
+        original = self.fake_docker
+
+        def docker(argv, **kwargs):
+            removed.append(argv[1])
+            return original(argv, **kwargs)
+
+        with (
+            patch.object(recovery.subprocess, "run", docker),
+            patch.object(recovery, "processes_naming",
+                         lambda _root: [] if "rm" in removed else [77]),
+        ):
+            self.assertEqual(self.recover(), "recovered")
+
+    def test_container_appearing_after_helpers_exit_is_caught(self):
+        self.write_lease(containers=[CONTAINER])
+        listings = iter(["", CONTAINER])
+
+        def docker(argv, **_kwargs):
+            out = next(listings) if argv[1] == "container" else ""
+            return subprocess.CompletedProcess(argv, 0, stdout=out, stderr="")
+
+        with patch.object(recovery.subprocess, "run", docker):
+            self.assert_refused_and_retained("not confirmed absent")
+
+    def test_owner_exiting_within_the_wait_allows_recovery(self):
+        answers = iter([99, None])
+        with (
+            patch.object(recovery, "_process_start", lambda _pid: next(answers)),
+            patch.object(recovery.time, "sleep"),
+        ):
+            self.assertEqual(recovery.recover(self.lease, self.parent, wait=5), "recovered")
+
+    def test_surviving_owner_is_killed_only_when_asked_and_by_exact_pid(self):
+        kills = []
+        alive = {"value": True}
+
+        def kill(pid, sig):
+            kills.append((pid, sig))
+            alive["value"] = False
+
+        with (
+            patch.object(recovery, "_process_start",
+                         lambda _pid: 99 if alive["value"] else None),
+            patch.object(recovery.os, "kill", kill),
+            patch.object(recovery.time, "sleep"),
+        ):
+            self.assert_refused_and_retained("still running")
+            self.assertEqual(kills, [])
+            self.assertEqual(
+                recovery.recover(self.lease, self.parent, wait=0, terminate_owner=True),
+                "recovered",
+            )
+        self.assertEqual(kills, [(4242, recovery.signal.SIGKILL)])
+
+    def test_reused_pid_is_never_killed(self):
+        with (
+            patch.object(recovery, "_process_start", lambda _pid: 100),
+            patch.object(recovery.os, "kill", side_effect=AssertionError("must not kill")),
+        ):
+            self.assertEqual(
+                recovery.recover(self.lease, self.parent, wait=0, terminate_owner=True),
+                "recovered",
+            )
+
+    def test_unkillable_owner_is_refused_and_retained(self):
+        with (
+            patch.object(recovery, "_process_start", lambda _pid: 99),
+            patch.object(recovery.os, "kill"),
+            patch.object(recovery.time, "monotonic", side_effect=iter(range(0, 1000, 10))),
+            patch.object(recovery.time, "sleep"),
+            self.assertRaisesRegex(recovery.Refused, "still running"),
+        ):
+            recovery.recover(self.lease, self.parent, wait=0, terminate_owner=True)
+        self.assertEqual(self.unmounted, [])
 
     def test_container_not_confirmed_absent_retains_mounts(self):
         self.write_lease(containers=[CONTAINER])
@@ -309,6 +387,7 @@ class LeaseLifecycleTests(unittest.TestCase):
                 self.assertEqual(len(steps), 2)
                 self.assertIn("--quota-parent", steps[0]["run"])
                 self.assertIn("audit.resource_recovery", steps[1]["run"])
+                self.assertIn("--terminate-owner", steps[1]["run"])
                 self.assertEqual(steps[1]["if"], "always()")
 
 

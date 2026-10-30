@@ -222,9 +222,17 @@ name = ""
 if sys.argv[3] != "none":
     name = "tnd-audit-" + uuid.uuid4().hex
     owner.record_container(name)
-    subprocess.run(["docker", "run", "-d", "--name", name, "--network", "none",
-                    "--mount", f"type=bind,src={owner.root / 'build'},dst=/build",
-                    sys.argv[3], "sleep", "600"], check=True, stdout=subprocess.DEVNULL)
+    # Attached and in its own session, as `command()` runs production containers.
+    subprocess.Popen(["docker", "run", "--name", name, "--network", "none",
+                      "--mount", f"type=bind,src={owner.root / 'build'},dst=/build",
+                      sys.argv[3], "sleep", "600"], start_new_session=True,
+                     stdout=subprocess.DEVNULL)
+    for _ in range(60):
+        listed = subprocess.run(["docker", "ps", "-q", "--filter", f"name=^/{name}$"],
+                                capture_output=True, text=True, check=True).stdout
+        if listed.strip():
+            break
+        time.sleep(1)
 print(json.dumps({"root": str(owner.root), "container": name}), flush=True)
 time.sleep(600)
 """
