@@ -1,0 +1,10 @@
+[project]
+prover = "lean4"
+choir_protocol = 9
+choir_commit = "75bc39e40c55542d445653356778c21ada4a66ff"
+
+[automation]
+merge = "manual"
+
+[reconcile]
+stale_after_days = 7

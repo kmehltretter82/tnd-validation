@@ -1,0 +1,10 @@
+.lake/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+audit/output/
+.choir/orchestrator.toml
+choir-proof-tree.html

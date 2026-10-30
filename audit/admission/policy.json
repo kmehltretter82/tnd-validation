@@ -1,0 +1,133 @@
+{
+  "source_files": [
+    {
+      "path": "TNDLib.lean",
+      "module_name": "TNDLib",
+      "namespace_name": "",
+      "imports": [
+        "TNDLib.Logic",
+        "TNDLib.Predicate",
+        "TNDLib.Nat",
+        "TNDLib.List",
+        "TNDLib.Finite",
+        "TNDLib.Algebra"
+      ],
+      "declarations": [],
+      "universes": []
+    },
+    {
+      "path": "TNDLib/Logic.lean",
+      "module_name": "TNDLib.Logic",
+      "namespace_name": "TNDLib.Logic",
+      "imports": [
+        "Init"
+      ],
+      "declarations": [
+        "TNDLib.Logic.andOrDistribute",
+        "TNDLib.Logic.notOr",
+        "TNDLib.Logic.decidableExcludedMiddle",
+        "TNDLib.Logic.doubleNegatedExcludedMiddle",
+        "TNDLib.Logic.decidableDoubleNegation"
+      ],
+      "universes": []
+    },
+    {
+      "path": "TNDLib/Predicate.lean",
+      "module_name": "TNDLib.Predicate",
+      "namespace_name": "TNDLib.Predicate",
+      "imports": [
+        "Init"
+      ],
+      "declarations": [
+        "TNDLib.Predicate.notExists",
+        "TNDLib.Predicate.forallAnd",
+        "TNDLib.Predicate.existsOr",
+        "TNDLib.Predicate.assembleWitnesses"
+      ],
+      "universes": []
+    },
+    {
+      "path": "TNDLib/Nat.lean",
+      "module_name": "TNDLib.Nat",
+      "namespace_name": "TNDLib.Nat",
+      "imports": [
+        "Init"
+      ],
+      "declarations": [
+        "TNDLib.Nat.sumTo",
+        "TNDLib.Nat.leSumTo",
+        "TNDLib.Nat.sumToSucc",
+        "TNDLib.Nat.sumToWitness"
+      ],
+      "universes": []
+    },
+    {
+      "path": "TNDLib/List.lean",
+      "module_name": "TNDLib.List",
+      "namespace_name": "TNDLib.List",
+      "imports": [
+        "Init"
+      ],
+      "declarations": [
+        "TNDLib.List.splitAt",
+        "TNDLib.List.splitAtPrefix",
+        "TNDLib.List.splitAtSuffix",
+        "TNDLib.List.splitAtRecombine",
+        "TNDLib.List.splitAtLength"
+      ],
+      "universes": []
+    },
+    {
+      "path": "TNDLib/Finite.lean",
+      "module_name": "TNDLib.Finite",
+      "namespace_name": "TNDLib.Finite",
+      "imports": [
+        "Init"
+      ],
+      "declarations": [
+        "TNDLib.Finite.enumerate",
+        "TNDLib.Finite.memEnumerate",
+        "TNDLib.Finite.lengthEnumerate",
+        "TNDLib.Finite.select",
+        "TNDLib.Finite.memSelect"
+      ],
+      "universes": []
+    },
+    {
+      "path": "TNDLib/Algebra.lean",
+      "module_name": "TNDLib.Algebra",
+      "namespace_name": "TNDLib.Algebra",
+      "imports": [
+        "Init"
+      ],
+      "declarations": [
+        "TNDLib.Algebra.product",
+        "TNDLib.Algebra.productAppend",
+        "TNDLib.Algebra.productNil",
+        "TNDLib.Algebra.productCons",
+        "TNDLib.Algebra.productSingleton"
+      ],
+      "universes": []
+    }
+  ],
+  "task_files": [
+    {
+      "id": "map_exists",
+      "source_path": "tasks/map_exists.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.mapExists"
+      ],
+      "universes": [
+        "u",
+        "v"
+      ],
+      "challenge_sha256": "056330ec1a57d9ba56c838f88d0f834fff75e845b4452126e97927bdf18f761d"
+    }
+  ]
+}

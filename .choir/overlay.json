@@ -1,0 +1,61 @@
+{
+  "files": {
+    ".choir/verify.toml": {
+      "class": "seeded",
+      "sha256": "69c5bc748e6c1e0cf773458df275c3472d34e03e71e62d0557309cbadf5c5319"
+    },
+    ".github/workflows/issue-close-on-merge.yml": {
+      "class": "managed",
+      "sha256": "0d84543aa5db826e7f63390aa2c45a30bd3ab74dda9fbf71913a4090fea3277f"
+    },
+    ".github/workflows/issue-intake.yml": {
+      "class": "managed",
+      "sha256": "0ff2aa08aa8571b2bc9a2116aabc3a1ad51f7f6fc49af85b66e830f37a56259a"
+    },
+    ".github/workflows/reconcile.yml": {
+      "class": "managed",
+      "sha256": "dd078fb4bd585af724d37727e5e6fbab6d27bdea150fdd73180e08e7b5b61356"
+    },
+    ".github/workflows/verify-axiom-honesty.yml": {
+      "class": "managed",
+      "sha256": "395233cf871e9d8e270a6855ddeb11d50a6a16d23c5a0282087a88894adf507d"
+    },
+    ".github/workflows/verify-comparator.yml": {
+      "class": "managed",
+      "sha256": "93a1a21028c8f1e210e11df6ceb2162cf691823bf581317e1e488188375ac823"
+    },
+    ".github/workflows/verify-pr.yml": {
+      "class": "seeded",
+      "sha256": "1208da1296a0b9f53d30ddf6822f70f74511b74990ab055b6089320ac23d3145"
+    },
+    ".github/workflows/verify-sorry.yml": {
+      "class": "managed",
+      "sha256": "6e8a549b47a23316b097e6e218126a31d12a9fdeb4adba7c639d33ce5931d59e"
+    },
+    ".github/workflows/verify-statement-equiv.yml": {
+      "class": "managed",
+      "sha256": "cce1f5ca92dc5d2c4d62bc69663bf2847579f501690e18e92283c9afc78813e7"
+    },
+    ".github/workflows/verify-statement-immutability.yml": {
+      "class": "managed",
+      "sha256": "863188d43ccaeee21f6c4607f0e70e908ae855f26cefc4831cfe380d3fa3e93b"
+    },
+    ".github/workflows/verify-style.yml": {
+      "class": "managed",
+      "sha256": "cf384b92e40e0063d8d18997e4319de44d27001818ec975ad90fc029e14a0e6d"
+    },
+    ".github/workflows/verify-trust-report.yml": {
+      "class": "managed",
+      "sha256": "9230afc9717c57d5dc93329cf93fbc04af9e6b52defc74db2260b1053f4c9759"
+    },
+    "pyproject.toml": {
+      "class": "managed",
+      "sha256": "5e6454c2a56573692141456dd1dff5f0450dfc576d83cb5d22351132c79dc318"
+    },
+    "uv.lock": {
+      "class": "managed",
+      "sha256": "3357720bfabdf054d8304bae5a6cc0936deeeed04a5c0040172991be1985bb8c"
+    }
+  },
+  "manifest_version": 1
+}

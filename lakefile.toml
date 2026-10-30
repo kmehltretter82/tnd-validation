@@ -1,0 +1,6 @@
+name = "tndlib"
+version = "0.1.0"
+defaultTargets = ["TNDLib"]
+
+[[lean_lib]]
+name = "TNDLib"

@@ -1,0 +1,49 @@
+name: verify-trust-report
+
+# TND adaptation: preserve Choir's check name while rebuilding and auditing in
+# network-free unprivileged containers. Candidate source never runs on this host.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: read
+  pull-requests: read
+env:
+  GIT_NO_LAZY_FETCH: '1'
+concurrency:
+  group: choir-verify-trust-report-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  trust-report:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+      - name: Acquire filtered proof submission as data
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >-
+          python3 -m gate.verify.tnd_fetch --repo "$REPO" --pr "$PR_NUMBER"
+          --base "$BASE_SHA" --head "$HEAD_SHA"
+      - uses: ./.github/actions/setup-verifier
+      - name: Rebuild and report actual proof dependencies
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: >-
+          python3 audit/run.py --repo . --base "$BASE_SHA" --head "$HEAD_SHA"
+          --quota-parent "$RUNNER_TEMP" --output audit/output/report.json
+      - name: Show structured report
+        if: always()
+        run: |
+          if [ -f audit/output/report.json ]; then cat audit/output/report.json; fi

@@ -1,0 +1,27 @@
+name: Set up trusted TND verifier
+description: Install pinned Lean and build the maintained checker before any submission runs.
+runs:
+  using: composite
+  steps:
+    - name: Refuse certification until the source-binding boundary is validated
+      shell: bash
+      run: python3 -m gate.verify.tnd_readiness
+    - uses: astral-sh/setup-uv@8d55fbecc275b1c35dbe060458839f8d30439ccf
+      with:
+        version: '0.9.6'
+        enable-cache: false
+    - name: Install pinned Lean from the checksum-verified official archive
+      shell: bash
+      run: python3 audit/install_lean.py --dest "$RUNNER_TEMP/lean-4.35.0" --github
+    - name: Install locked Python dependencies
+      shell: bash
+      run: uv sync --frozen --extra dev
+    - name: Build trusted checker and exporter
+      shell: bash
+      working-directory: audit
+      env:
+        LEAN_NUM_THREADS: '2'
+      run: lake build
+    - name: Fetch pinned sandbox image before running submitted code
+      shell: bash
+      run: docker pull ubuntu@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac

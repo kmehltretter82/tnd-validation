@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    {
+      "id": "map_exists",
+      "source_path": "tasks/map_exists.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": ["TNDTask.mapExists"]
+    }
+  ]
+}

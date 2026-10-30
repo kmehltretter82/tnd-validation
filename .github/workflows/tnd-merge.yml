@@ -1,0 +1,66 @@
+name: tnd-merge
+run-name: 'TND merge PR ${{ inputs.pr }} head:${{ inputs.head_sha }}'
+
+# Disabled until the live acceptance tests in .choir/TND-INTEGRATION.md pass:
+# the job runs only when the TND_MERGE_LANE_ENABLED repository variable is set.
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Pull request number
+        required: true
+        type: string
+      head_sha:
+        description: Exact reviewed head commit
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  GIT_NO_LAZY_FETCH: '1'
+
+concurrency:
+  group: tnd-candidate-lane-${{ inputs.pr }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  merge:
+    if: vars.TND_MERGE_LANE_ENABLED == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # Holds the merge token. Merging with the default GITHUB_TOKEN would create
+    # no downstream runs, silently skipping issue-close-on-merge and audit-main;
+    # the protection read also needs more than that token can be granted.
+    environment: tnd-merge
+    steps:
+      # Maintained main code only; no candidate is ever checked out here.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@8d55fbecc275b1c35dbe060458839f8d30439ccf
+        with:
+          version: '0.9.6'
+          enable-cache: false
+
+      - name: Install Python deps
+        run: uv sync --frozen --extra dev
+
+      - name: Merge the exact head after the complete preflight
+        env:
+          GH_TOKEN: ${{ secrets.TND_MERGE_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ inputs.pr }}
+          HEAD_SHA: ${{ inputs.head_sha }}
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN"
+          uv run --frozen --extra dev python -m orchestrator.merge_lane \
+            --repo "$REPO" --pr "$PR" --head-sha "$HEAD_SHA"

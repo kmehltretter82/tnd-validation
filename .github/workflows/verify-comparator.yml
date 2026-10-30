@@ -1,0 +1,74 @@
+name: verify-comparator
+
+# Original Choir workspace construction and Lean comparator semantics, inside an
+# additional network-free Docker boundary. No "not-applicable" path is green.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+env:
+  GIT_NO_LAZY_FETCH: '1'
+concurrency:
+  group: choir-verify-comparator-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  comparator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+      - name: Acquire filtered proof submission as data
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >-
+          python3 -m gate.verify.tnd_fetch --repo "$REPO" --pr "$PR_NUMBER"
+          --base "$BASE_SHA" --head "$HEAD_SHA"
+      - uses: ./.github/actions/setup-verifier
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+        with:
+          go-version: '1.26.0'
+          cache: false
+      - name: Build pinned sandbox launcher
+        env:
+          CGO_ENABLED: '0'
+          GOMAXPROCS: '2'
+        run: go install github.com/zouuup/landrun/cmd/landrun@ec104f6edc1e14d7fec6d31146f1ec6f9c192c5a
+      - name: Check out pinned comparator
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: leanprover/comparator
+          ref: e3dcf3083fc53d44b27a4431fabf7d43181583f5
+          path: .comparator-tool
+          persist-credentials: false
+      - name: Build trusted comparator and exporter
+        working-directory: .comparator-tool
+        env:
+          LEAN_NUM_THREADS: '2'
+        run: lake build lean4export comparator
+      - name: Compare the approved task in the isolated container
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          uv run --frozen python -m gate.verify.tnd_comparator \
+            --repo "$REPO" --pr "$PR_NUMBER" --base "$BASE_SHA" --head "$HEAD_SHA" \
+            --comparator .comparator-tool --landrun "$(go env GOPATH)/bin/landrun" \
+            --quota-parent "$RUNNER_TEMP"
+      - name: Reconcile quota mounts from any abnormal exit
+        if: always()
+        run: python3 -m audit.resource_recovery --parent "$RUNNER_TEMP"

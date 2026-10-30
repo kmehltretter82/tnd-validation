@@ -1,0 +1,9 @@
+[audits.axiom_honesty]
+policy = "whitelist"
+allowed_axioms = ["propext", "Quot.sound"]
+
+[audits.sorry_delta]
+policy = "block"
+
+[audits.style]
+threshold_lines = 200

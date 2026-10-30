@@ -1,0 +1,17 @@
+name = "tndaudit"
+version = "0.1.0"
+defaultTargets = ["tnd-check", "tnd-export"]
+
+[[lean_exe]]
+name = "tnd-check"
+root = "Check"
+
+[[lean_exe]]
+name = "tnd-export"
+root = "ExportPublic"
+supportInterpreter = true
+
+[[require]]
+name = "Comparator"
+git = "https://github.com/leanprover/comparator.git"
+rev = "e3dcf3083fc53d44b27a4431fabf7d43181583f5"

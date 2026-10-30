@@ -1,0 +1,28 @@
+name: Request a constructive formalization
+description: Propose mathematics for maintainer review before it becomes a Choir task.
+title: 'Request: '
+labels:
+  - tnd/proposal
+body:
+  - type: markdown
+    attributes:
+      value: This is a proposal for review. It does not create a claimable Choir task or certify a result; the repository owner separately publishes approved task statements.
+  - type: textarea
+    id: statement
+    attributes:
+      label: Proposed statement
+      description: State the result and its hypotheses. Lean syntax is optional.
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source and explanation
+      description: Give a mathematical citation or explain that this is an original request. Explain the mathematics, credit the source, and note any desired algorithm or witness.
+    validations:
+      required: true
+  - type: textarea
+    id: constructive
+    attributes:
+      label: Constructive considerations
+      description: Describe decidability hypotheses or constructive reformulations that may be needed.

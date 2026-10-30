@@ -1,0 +1,78 @@
+name: verify-sorry
+
+# Phase 3 audit: fail PRs that increase the number of `sorry`s in any
+# changed .lean file. `lake build` treats sorry as a warning, so the
+# rebuild audit alone would merge sorry-shaped "proofs" — this check is
+# the explicit blocker. Closing sorries (the normal work product)
+# passes. See gate/verify/sorry_delta.py.
+#
+# Per-project policy via `.choir/verify.toml` `[audits.sorry_delta]`,
+# read from the BASE SHA (a PR can't loosen itself): `block` (default)
+# fails on net-new sorries; `report` lists them but passes — partial
+# progress merges only by orchestrator review decision.
+#
+# A `choir-reduction` block in the PR body holds the submission to the
+# reduction contract instead: a placeholder is permitted on an
+# obligation the block declares and never on the task's own target. The
+# target is read from the linked task's issue rather than from the
+# block, which is why this job needs `issues: read` — without it that
+# lookup 403s and the audit exits 2.
+#
+# Posts its own required status check: `verify-sorry / sorry-delta`.
+# Branch protection should require this alongside the other audits.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+env:
+  GIT_NO_LAZY_FETCH: '1'
+
+concurrency:
+  group: choir-verify-sorry-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  sorry-delta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Acquire filtered proof submission as data
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >-
+          python3 -m gate.verify.tnd_fetch --repo "$REPO" --pr "$PR_NUMBER"
+          --base "$BASE_SHA" --head "$HEAD_SHA"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@8d55fbecc275b1c35dbe060458839f8d30439ccf
+        with:
+          version: '0.9.6'
+          enable-cache: false
+
+      - name: Install Python deps
+        run: uv sync --frozen --extra dev
+
+      - name: Run sorry-delta audit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          uv run python -m gate.verify.sorry_delta_cli \
+            --repo "${{ github.repository }}" \
+            --pr "${{ github.event.pull_request.number }}"

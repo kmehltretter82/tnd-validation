@@ -1,0 +1,30 @@
+import TNDLib
+
+#print axioms TNDLib.Algebra.product
+#print axioms TNDLib.Algebra.productAppend
+#print axioms TNDLib.Algebra.productNil
+#print axioms TNDLib.Algebra.productCons
+#print axioms TNDLib.Algebra.productSingleton
+#print axioms TNDLib.Finite.enumerate
+#print axioms TNDLib.Finite.memEnumerate
+#print axioms TNDLib.Finite.lengthEnumerate
+#print axioms TNDLib.Finite.select
+#print axioms TNDLib.Finite.memSelect
+#print axioms TNDLib.List.splitAt
+#print axioms TNDLib.List.splitAtPrefix
+#print axioms TNDLib.List.splitAtSuffix
+#print axioms TNDLib.List.splitAtRecombine
+#print axioms TNDLib.List.splitAtLength
+#print axioms TNDLib.Logic.andOrDistribute
+#print axioms TNDLib.Logic.notOr
+#print axioms TNDLib.Logic.decidableExcludedMiddle
+#print axioms TNDLib.Logic.doubleNegatedExcludedMiddle
+#print axioms TNDLib.Logic.decidableDoubleNegation
+#print axioms TNDLib.Nat.sumTo
+#print axioms TNDLib.Nat.leSumTo
+#print axioms TNDLib.Nat.sumToSucc
+#print axioms TNDLib.Nat.sumToWitness
+#print axioms TNDLib.Predicate.notExists
+#print axioms TNDLib.Predicate.forallAnd
+#print axioms TNDLib.Predicate.existsOr
+#print axioms TNDLib.Predicate.assembleWitnesses

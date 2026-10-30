@@ -1,0 +1,126 @@
+name: audit-main
+run-name: 'TND published commit ${{ github.sha }}'
+
+on:
+  push:
+    branches: [main]
+  # Renew commit-bound evidence before the 90-day Actions retention limit.
+  schedule:
+    - cron: '23 5 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit-main:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    outputs:
+      artifact-id: ${{ steps.evidence.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+      - uses: ./.github/actions/setup-verifier
+      - name: Audit every published export at this exact commit
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: >-
+          python3 audit/run.py --repo . --base "$SOURCE_SHA" --head "$SOURCE_SHA"
+          --quota-parent "$RUNNER_TEMP" --output audit/output/audit.json
+      - name: Reconcile quota mounts from any abnormal exit
+        if: always()
+        run: python3 -m audit.resource_recovery --parent "$RUNNER_TEMP"
+      - name: Bind report to this trusted workflow attempt
+        env:
+          AUDIT_REPOSITORY: ${{ github.repository }}
+          AUDIT_EVENT: ${{ github.event_name }}
+          AUDIT_RUN_ID: ${{ github.run_id }}
+          AUDIT_RUN_ATTEMPT: ${{ github.run_attempt }}
+          AUDIT_HEAD_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          path = Path('audit/output/audit.json')
+          report = json.loads(path.read_text())
+          sha = os.environ['AUDIT_HEAD_SHA']
+          assert re.fullmatch('[0-9a-f]{40}', sha)
+          assert report['status'] == 'verified'
+          assert report['base_sha'] == sha and report['head_sha'] == sha
+          assert os.environ['AUDIT_EVENT'] in ('push', 'schedule', 'workflow_dispatch')
+          run_id, attempt = int(os.environ['AUDIT_RUN_ID']), int(os.environ['AUDIT_RUN_ATTEMPT'])
+          assert run_id > 0 and attempt > 0
+          report['ci'] = {
+              'repository': os.environ['AUDIT_REPOSITORY'],
+              'workflow': '.github/workflows/audit-main.yml',
+              'event': os.environ['AUDIT_EVENT'],
+              'run_id': run_id,
+              'run_attempt': attempt,
+              'head_sha': sha,
+          }
+          path.write_text(json.dumps(report, indent=2) + '\n')
+          PY
+      - name: Publish machine-readable audit evidence
+        id: evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tnd-audit-report
+          path: audit/output/audit.json
+          if-no-files-found: error
+          retention-days: 90
+
+  # A separate fresh runner publishes the original archive unchanged. It never
+  # checks out or executes mathematical source and never unpacks the artifact.
+  publish-evidence:
+    needs: audit-main
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      SOURCE_SHA: ${{ github.sha }}
+      RUN_ID: ${{ github.run_id }}
+      ARTIFACT_ID: ${{ needs.audit-main.outputs.artifact-id }}
+    steps:
+      - name: Fetch and validate the exact archive produced by this audit
+        run: |
+          set -euo pipefail
+          gh api "repos/$REPO/actions/artifacts/$ARTIFACT_ID" > metadata.json
+          gh api "repos/$REPO/actions/artifacts/$ARTIFACT_ID/zip" > evidence.zip
+          python3 - <<'PY'
+          import hashlib, json, os, re
+          from pathlib import Path
+          artifact = json.loads(Path('metadata.json').read_text())
+          assert re.fullmatch('[0-9a-f]{40}', os.environ['SOURCE_SHA'])
+          assert os.environ['RUN_ID'].isdigit() and os.environ['ARTIFACT_ID'].isdigit()
+          assert artifact['id'] == int(os.environ['ARTIFACT_ID'])
+          assert artifact['name'] == 'tnd-audit-report'
+          assert not artifact['expired']
+          assert artifact['workflow_run']['id'] == int(os.environ['RUN_ID'])
+          assert artifact['workflow_run']['head_sha'] == os.environ['SOURCE_SHA']
+          expected = artifact['digest']
+          assert re.fullmatch('sha256:[0-9a-f]{64}', expected)
+          actual = 'sha256:' + hashlib.sha256(Path('evidence.zip').read_bytes()).hexdigest()
+          assert actual == expected, 'artifact archive digest mismatch'
+          asset = f"audit-{os.environ['SOURCE_SHA']}-{os.environ['RUN_ID']}-{os.environ['ARTIFACT_ID']}.zip"
+          Path('evidence.zip').rename(asset)
+          PY
+      - name: Publish immutable public evidence asset
+        run: |
+          set -euo pipefail
+          if ! gh release view tnd-audit-evidence --repo "$REPO" >/dev/null 2>&1; then
+            gh release create tnd-audit-evidence --repo "$REPO" --target "$SOURCE_SHA" \
+              --title 'TND audit evidence' \
+              --notes 'Commit-bound verification archives. Validate their digest against the matching successful audit-main Actions run. Assets do not imply certification without that check.'
+          fi
+          gh release upload tnd-audit-evidence --repo "$REPO" \
+            "audit-$SOURCE_SHA-$RUN_ID-$ARTIFACT_ID.zip"

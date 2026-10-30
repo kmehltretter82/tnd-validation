@@ -1,0 +1,96 @@
+name: maintainer-regression
+
+# This workflow checks trusted maintainer changes and the resulting main tree.
+# It is deliberately not a certification path: it neither issues evidence nor
+# exercises the native-Linux isolation and quota boundaries.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maintainer-regression-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    # A pull_request job checks out and executes the head. Only repository
+    # writers can create a same-repository branch; never execute a fork head.
+    # Manual dispatch is likewise restricted to reviewed main-branch code.
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      LEAN_NUM_THREADS: '2'
+    steps:
+      - name: Check out the exact trusted regression candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Install locked Python tooling
+        uses: astral-sh/setup-uv@8d55fbecc275b1c35dbe060458839f8d30439ccf
+        with:
+          version: '0.9.6'
+          enable-cache: false
+
+      - name: Install pinned Lean from the checksum-verified official archive
+        shell: bash
+        run: python3 audit/install_lean.py --dest "$RUNNER_TEMP/lean-4.35.0" --github
+
+      - name: Install locked Python dependencies
+        run: uv sync --frozen --extra dev
+
+      - name: Build the library, examples, and clean downstream consumer
+        run: |
+          set -euo pipefail
+          lake build
+          lake env lean tests/corpus/Examples.lean
+          python3 tests/check_downstream.py
+
+      - name: Build the independent checker and exporter
+        working-directory: audit
+        run: lake build
+
+      - name: Exercise admission and proof-object boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          lean_bin="$TND_LEAN_ROOT/bin/lean"
+          python3 audit/admission/test_admission.py --lean "$lean_bin"
+          python3 tests/audit/check_fixtures.py \
+            --lean "$lean_bin" \
+            --checker audit/.lake/build/bin/tnd-check \
+            --exporter audit/.lake/build/bin/tnd-export
+
+      - name: Rehearse exact task promotion without publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          lean_bin="$TND_LEAN_ROOT/bin/lean"
+          python3 tests/audit/promotion_rehearsal.py \
+            --lean "$lean_bin" \
+            --checker audit/.lake/build/bin/tnd-check \
+            --exporter audit/.lake/build/bin/tnd-export
+
+      - name: Run Python regression, syntax, and style checks
+        run: |
+          set -euo pipefail
+          uv run --frozen --extra dev python -m pytest -q
+          uv run --frozen --extra dev python -m unittest discover -s tests/audit -p 'test_*.py'
+          uv run --frozen --extra dev python -m compileall -q \
+            audit gate orchestrator client choir_cli viz tests
+          uv run --frozen --extra dev ruff check \
+            audit gate orchestrator client choir_cli viz tests

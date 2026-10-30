@@ -1,0 +1,63 @@
+name: verify-axiom-honesty
+
+# Phase 3 audit: catch PRs that introduce new uses of axiom, unsafe,
+# partial, native_decide, or extern without explicit human review.
+# See gate/verify/axiom_honesty.py.
+#
+# Posts its own required status check: `verify-axiom-honesty / axiom-honesty`.
+# Branch protection should require this alongside the other audits.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  GIT_NO_LAZY_FETCH: '1'
+
+concurrency:
+  group: choir-verify-axiom-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  axiom-honesty:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Acquire filtered proof submission as data
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >-
+          python3 -m gate.verify.tnd_fetch --repo "$REPO" --pr "$PR_NUMBER"
+          --base "$BASE_SHA" --head "$HEAD_SHA"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@8d55fbecc275b1c35dbe060458839f8d30439ccf
+        with:
+          version: '0.9.6'
+          enable-cache: false
+
+      - name: Install Python deps
+        run: uv sync --frozen --extra dev
+
+      - name: Run axiom-honesty audit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          uv run python -m gate.verify.axiom_honesty_cli \
+            --repo "${{ github.repository }}" \
+            --pr "${{ github.event.pull_request.number }}"

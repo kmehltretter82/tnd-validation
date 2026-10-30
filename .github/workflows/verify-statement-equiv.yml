@@ -1,0 +1,71 @@
+name: verify-statement-equiv
+
+# Phase 3 audit: catch PRs that "prove" a sorry by silently weakening
+# the statement. Compares the base and head versions of the target
+# declaration's signature (string-based, naive — see
+# gate/verify/statement_equiv.py for the v0 caveat).
+#
+# Posts its own required status check: `verify-statement-equiv / statement-equiv`.
+# Branch protection should require this in addition to verify-pr / rebuild.
+#
+# This check's PRESENCE is required on every prover, but whether a FAILURE
+# blocks a merge is prover-dependent (design note 14 §8): blocking on
+# isabelle/rocq (their only statement check), advisory on lean4, where
+# verify-comparator supersedes it at the kernel level. See
+# gate/checks.py's PROVER_OVERRIDES for the mapping — don't restate it here.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+env:
+  GIT_NO_LAZY_FETCH: '1'
+
+concurrency:
+  group: choir-verify-equiv-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  statement-equiv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1  # only the exact maintained base; the helper fetches the head
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Acquire filtered proof submission as data
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >-
+          python3 -m gate.verify.tnd_fetch --repo "$REPO" --pr "$PR_NUMBER"
+          --base "$BASE_SHA" --head "$HEAD_SHA"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@8d55fbecc275b1c35dbe060458839f8d30439ccf
+        with:
+          version: '0.9.6'
+          enable-cache: false
+
+      - name: Install Python deps
+        run: uv sync --frozen --extra dev
+
+      - name: Run statement-equivalence audit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          uv run python -m gate.verify.statement_equiv_cli \
+            --repo "${{ github.repository }}" \
+            --pr "${{ github.event.pull_request.number }}"

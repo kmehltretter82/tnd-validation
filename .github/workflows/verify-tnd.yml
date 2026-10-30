@@ -1,0 +1,87 @@
+name: verify-tnd
+run-name: 'TND PR ${{ github.event.pull_request.number }} head:${{ github.event.pull_request.head.sha }} base:${{ github.event.pull_request.base.sha }}'
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  GIT_NO_LAZY_FETCH: '1'
+
+# Shared with tnd-merge.yml: an audit attempt either finishes before a merge
+# holds this lane or cannot start until after that merge. Attempts queue rather
+# than cancel, so one is never replaced unobserved. GitHub drops runs past its
+# 100-pending cap; the merge preflight refuses a head with no verified attempt.
+concurrency:
+  group: tnd-candidate-lane-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+      - name: Acquire filtered proof submission as data
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >-
+          python3 -m gate.verify.tnd_fetch --repo "$REPO" --pr "$PR_NUMBER"
+          --base "$BASE_SHA" --head "$HEAD_SHA"
+      - uses: ./.github/actions/setup-verifier
+      - name: Independently verify isolated proof exports
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: >-
+          python3 audit/run.py --repo . --base "$BASE_SHA" --head "$HEAD_SHA"
+          --quota-parent "$RUNNER_TEMP" --output audit/output/audit.json
+      - name: Reconcile quota mounts from any abnormal exit
+        if: always()
+        run: python3 -m audit.resource_recovery --parent "$RUNNER_TEMP"
+      - name: Retain commit-bound evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tnd-audit-report
+          path: audit/output/audit.json
+          if-no-files-found: error
+          retention-days: 90
+
+  # This fresh runner receives no source checkout or proof artifacts. Only this
+  # reporter has write permission; the verifier and every candidate build do not.
+  report:
+    needs: verify
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      statuses: write
+    steps:
+      - name: Bind audit status to the submitted head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RESULT: ${{ needs.verify.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          state=failure
+          if [ "$RESULT" = success ]; then state=success; fi
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state="$state" -f context=tnd-audit \
+            -f description="Trusted TND verification: $RESULT" -f target_url="$RUN_URL"
