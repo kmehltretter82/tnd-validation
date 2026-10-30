@@ -26,6 +26,16 @@ Docker 28.0.4, overlay2, cgroup v2, built-in seccomp, `sudo` available.
 - `maintainer-regression` passed its whole matrix, and `audit-main` stopped at the
   certification guard with every later step skipped. Both ran on that commit.
 
+Failure behavior on the same runner, holding real mounts and a container attached as
+production attaches them (commit `83a2db7`):
+
+- A real run cancellation first left recovery refusing, with mounts and container in
+  place. The owner had outlived its cancelled step as an orphan, and an attached client
+  would have blocked recovery too. After the fix, two cancellations and one `SIGKILL`
+  of the owner each recovered completely, including the orphaned owner.
+- Killing `Runner.Worker` ended the job as a failure. No later step ran and no report
+  was uploaded, so that case rests on VM disposal, as designed.
+
 The swap matters for budgets: tmpfs may swap, so a quota mount's bytes are not all
 held in RAM here, unlike on the VM.
 
@@ -62,11 +72,9 @@ describe today's small corpus and say little about an adversarial or larger buil
 
 ## Not established
 
-- Real Actions failure behavior: a cancelled or killed job, and the `if: always()`
-  step recovering real mounts. On the hosted run it only found nothing to do.
+- Recovery inside the real `verify-tnd` workflow rather than a dedicated test workflow.
 - The merge lane.
 - Host memory under simultaneous tmpfs use, now on a runner that has swap.
-- Repeatability: the hosted result is a single run.
 - Filtered-fetch or server over-delivery.
 - `audit/run.py verify` end to end. Its guard correctly refuses while the flags are
   false, and it must not be bypassed to obtain this result.
