@@ -356,7 +356,7 @@ def _require_tnd_merge_state(repo: str, pr: PRView) -> None:
     raw_runs = _gh(
         "api", "--method", "GET", "--paginate", "--slurp",
         f"repos/{repo}/actions/workflows/verify-tnd.yml/runs",
-        "-f", "event=pull_request_target", "-f", f"head_sha={pr.base_sha}",
+        "-f", "event=pull_request_target", "-f", f"head_sha={pr.head_sha}",
         "-f", "per_page=100",
     )
     try:

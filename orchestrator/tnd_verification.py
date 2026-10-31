@@ -126,13 +126,17 @@ def require_verified_run(
     Among runs for this exact pair use the newest run, so an older green run
     cannot conceal a newer queued or failed attempt. GitHub reruns update the
     same run's status; no artifact from the untrusted build is interpreted here.
+
+    GitHub's REST API reports a `pull_request_target` run's `head_sha` as the PR
+    head, observed live on 2026-10-31, though the run executes the base's workflow.
+    The event and path establish that origin; the generated title binds the base.
     """
     title = run_title(number, head, base)
     matching = [
         run for run in runs
         if run.get("event") == "pull_request_target"
         and trusted_workflow_path(run.get("path"))
-        and run.get("head_sha") == base
+        and run.get("head_sha") == head
         and run.get("display_title") == title
     ]
     if not matching:

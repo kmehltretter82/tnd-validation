@@ -132,7 +132,11 @@ none cancelled, and a rerun completed as attempt 2 of its run. That covers only 
 capacity limit. The user ran `gh pr merge` on PR #2, with and without `--admin`, and
 GitHub refused both: "the base branch policy prohibits the merge" and "3 of 8 required
 status checks are failing". The project's own merge command has not been run there, and
-no successful merge has been observed, so the variable below remains unset.
+no successful merge has been observed. With all eight checks green and GitHub reporting
+`CLEAN`, `tnd-merge` refused a wrong head by name, then refused the right head as stale:
+GitHub reports a `pull_request_target` run's `head_sha` as the PR head, while the
+preflight queried the base. The preflight now uses the PR head; that fix has not yet
+run live. The variable below is set in that test repository only.
 
 Before setting the variable, a test repository must show that initial runs and
 all full/partial reruns acquire the same cross-workflow group, that `queue: max`

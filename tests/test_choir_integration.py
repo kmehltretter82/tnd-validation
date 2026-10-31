@@ -69,7 +69,7 @@ def test_current_policy_is_explicitly_not_certifiable():
 def successful_run(run_id: int = 1) -> dict:
     return {
         "id": run_id, "event": "pull_request_target", "path": WORKFLOW,
-        "head_sha": BASE, "display_title": run_title(7, HEAD, BASE),
+        "head_sha": HEAD, "display_title": run_title(7, HEAD, BASE),
         "status": "completed", "conclusion": "success",
         "run_attempt": 1, "created_at": "2026-10-29T09:00:00Z",
         "run_started_at": "2026-10-29T09:00:00Z",
@@ -805,3 +805,12 @@ def test_workflow_attempt_provenance_is_trusted_and_exact(tmp_path, mutation):
             "repository": "owner/tndlib", "workflow": ".github/workflows/audit-main.yml",
             "event": "push", "run_id": 456, "run_attempt": 2, "head_sha": HEAD,
         }
+
+
+def test_run_listing_is_queried_by_the_pr_head_as_github_reports_it(merge_environment):
+    prs.merge_pr("owner/tndlib", 7, prover="lean4")
+    listing = next(
+        call for call in merge_environment["calls"] if "verify-tnd.yml" in " ".join(call)
+    )
+    assert f"head_sha={HEAD}" in listing
+    assert f"head_sha={BASE}" not in listing
