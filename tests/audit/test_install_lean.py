@@ -195,6 +195,18 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertLess(install, build)
         self.assertNotIn("elan", "\n".join(runs))
 
+    def test_only_the_trusted_build_may_lazily_fetch(self):
+        action = yaml.safe_load((ROOT / ".github/actions/setup-verifier/action.yml").read_text())
+        allowed = [
+            step for step in action["runs"]["steps"] if "GIT_NO_LAZY_FETCH" in step.get("env", {})
+        ]
+        self.assertEqual(len(allowed), 1)
+        self.assertEqual(allowed[0]["run"], "lake build")
+        self.assertEqual(allowed[0]["working-directory"], "audit")
+        self.assertEqual(allowed[0]["env"]["GIT_NO_LAZY_FETCH"], "0")
+        workflow = yaml.safe_load((ROOT / ".github/workflows/verify-tnd.yml").read_text())
+        self.assertEqual(workflow["env"]["GIT_NO_LAZY_FETCH"], "1")
+
     def test_maintainer_ci_does_not_download_an_unverified_installer(self):
         text = (ROOT / ".github/workflows/maintainer-ci.yml").read_text()
         self.assertIn("audit/install_lean.py", text)
