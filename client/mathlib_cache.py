@@ -153,6 +153,15 @@ def _default_cache_get(workspace: Path) -> bool:
     return True
 
 
+def _locks_no_packages(manifest_text: str) -> bool:
+    """True only for a well-formed manifest whose package list is empty."""
+    try:
+        data = json.loads(manifest_text)
+    except json.JSONDecodeError:
+        return False
+    return isinstance(data, dict) and data.get("packages") == []
+
+
 def prepare_workspace_deps(
     workspace: Path,
     *,
@@ -164,6 +173,7 @@ def prepare_workspace_deps(
     status and lets the normal `lake exe cache get` proceed. Returns:
 
       ``"no-manifest"``      not a Lake/Mathlib project — nothing to do
+      ``"no-deps"``          the manifest locks no packages — nothing to fetch
       ``"present"``          packages already there (resume / re-run)
       ``"hit"``              linked to the shared store (no download, no copy)
       ``"fetched"``          miss: fetched, moved into the store, and linked
@@ -175,6 +185,8 @@ def prepare_workspace_deps(
     manifest = workspace / MANIFEST_NAME
     if not manifest.is_file():
         return "no-manifest"
+    if _locks_no_packages(manifest.read_text(encoding="utf-8")):
+        return "no-deps"
 
     pkgs = workspace / PACKAGES_REL
     _clear_empty_packages(pkgs)
