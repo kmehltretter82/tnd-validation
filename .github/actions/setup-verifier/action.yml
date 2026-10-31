@@ -21,6 +21,9 @@ runs:
       working-directory: audit
       env:
         LEAN_NUM_THREADS: '2'
+        # Lake materializes the pinned checker dependencies with partial clones,
+        # which need lazy fetch. Only this step, before any candidate code runs.
+        GIT_NO_LAZY_FETCH: '0'
       run: lake build
     - name: Fetch pinned sandbox image before running submitted code
       shell: bash
