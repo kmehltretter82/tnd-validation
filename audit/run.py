@@ -26,6 +26,8 @@ from collections.abc import Callable
 from pathlib import Path, PurePosixPath
 
 TOOLCHAIN = "leanprover/lean4:v4.35.0"
+EVIDENCE_PROFILE = "production-evidence-v1"
+PRODUCTION_ISOLATION = "native-linux-validated-v1"
 COMPARATOR_REV = "e3dcf3083fc53d44b27a4431fabf7d43181583f5"
 EXPORTER_REV = "5a9a355dc6c5fd82b69058d433e2ae2e8dfbf8fe"
 LAKEFILE = """name = "tnd_candidate"
@@ -582,7 +584,32 @@ def check_proof(
         or proof.get("toolchain") != "4.35.0"
     ):
         raise ValueError("isolated checker did not verify proof objects under Lean 4.35.0")
-    return proof
+    return {**proof, "development_only": True}
+
+
+def promote_evidence(certification: dict, proof: dict, admissions: dict) -> dict:
+    """Mark one verified run as production evidence; only the validated policy may.
+
+    The stages stay development-only by themselves. This is the single transition,
+    so it re-requires the certification policy and refuses anything but the exact
+    development reports it is replacing, in place for `proof` and `admissions`.
+    """
+    certified_resource_limits(certification)
+    if proof.get("development_only") is not True:
+        raise ValueError("checker evidence is not an unpromoted development report")
+    for report in admissions.values():
+        if (report.get("development_only") is not True
+                or report.get("parser_isolation") != "development-docker"):
+            raise ValueError("admission evidence is not an unpromoted development report")
+    proof.update(development_only=False, checker_isolation=PRODUCTION_ISOLATION)
+    for report in admissions.values():
+        report.update(development_only=False, parser_isolation=PRODUCTION_ISOLATION)
+    return {
+        "schema_version": 1,
+        "evidence_profile": EVIDENCE_PROFILE,
+        "source_binding_validated": True,
+        "resource_boundary_validated": True,
+    }
 
 
 def admitted_snapshot(
@@ -812,9 +839,11 @@ def verify(args: argparse.Namespace) -> dict:
             checker,
             export_stage,
         )
+        evidence = promote_evidence(certification, proof, admissions)
         return {
             "schema_version": 1,
             "status": "verified",
+            "certification": evidence,
             "base_sha": args.base,
             "head_sha": args.head,
             "toolchain": TOOLCHAIN,

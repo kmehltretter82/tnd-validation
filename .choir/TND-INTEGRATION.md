@@ -135,8 +135,11 @@ status checks are failing". The project's own merge command has not been run the
 no successful merge has been observed. With all eight checks green and GitHub reporting
 `CLEAN`, `tnd-merge` refused a wrong head by name, then refused the right head as stale:
 GitHub reports a `pull_request_target` run's `head_sha` as the PR head, while the
-preflight queried the base. The preflight now uses the PR head; that fix has not yet
-run live. The variable below is set in that test repository only.
+preflight queried the base. With the preflight using the PR head, `tnd-merge` merged PR
+#2 at its exact reviewed head using `TND_MERGE_TOKEN`, and the merge triggered
+`issue-close-on-merge` (task closed as `choir/done`) and `audit-main` (evidence published
+to a release). The variable below was set for that test and has been removed again. The
+lane's race boundaries, cancellation, and queue saturation remain untested.
 
 Before setting the variable, a test repository must show that initial runs and
 all full/partial reruns acquire the same cross-workflow group, that `queue: max`

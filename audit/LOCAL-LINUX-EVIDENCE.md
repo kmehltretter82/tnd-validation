@@ -53,8 +53,18 @@ of the pinned tools failed under `GIT_NO_LAZY_FETCH=1`, in both the shared setup
 comparator workflow; lazy fetch is now allowed for those two trusted build steps only.
 The generated comparator workspace also could not import a task outside the published
 library; with that fixed, all eight required checks passed on the hosted runner and the
-real comparator accepted the proof. Negative controls through the real comparator
-(weakened statement, `Classical.choice`, custom axiom) have not been run.
+real comparator accepted the proof.
+
+`audit-main` then passed on the merged commit and published its report, which
+`und-validation` fetched and correctly refused, showing results as unavailable, because
+`audit/run.py` emitted no `certification` block. It now keeps the checker's marker and
+emits that block only through `promote_evidence`, under a validated policy. Offline, the
+real generator refused that real report unpromoted and accepted it promoted, producing 28
+results. This has not yet run live.
+
+Through the same live gate, four negative-control PRs all failed `comparator` and
+`tnd-audit`: a weakened statement (`statement-mismatch`), `Classical.choice`, a custom
+axiom, and a leftover `sorry` (each `illegal-axiom`).
 
 The swap matters for budgets: tmpfs may swap, so a quota mount's bytes are not all
 held in RAM here, unlike on the VM.

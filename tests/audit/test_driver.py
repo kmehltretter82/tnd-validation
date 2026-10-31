@@ -322,7 +322,10 @@ class DriverBoundaryTests(unittest.TestCase):
         with patch.object(
             runner.checker_sandbox, "run_isolated_checker", return_value=wrapper
         ) as run:
-            self.assertEqual(runner.check_proof(runner.IMAGE, path, path, path, path, path), proof)
+            self.assertEqual(
+                runner.check_proof(runner.IMAGE, path, path, path, path, path),
+                {**proof, "development_only": True},
+            )
             self.assertIs(run.call_args.kwargs["check_seccomp"], runner.require_default_seccomp)
             self.assertIs(run.call_args.kwargs["cleanup"], runner.ensure_container_removed)
         for invalid in (
@@ -784,6 +787,69 @@ class DriverBoundaryTests(unittest.TestCase):
             self.assertEqual(seen["expected_hashes"]["Task.lean"], hashes["tasks/map_exists.lean"])
             self.assertEqual(report["source_sha256"], seen["expected_hashes"])
             self.assertTrue((source / "lake-manifest.json").is_file())
+
+
+VALIDATED_POLICY = {
+    "schema_version": 1,
+    "source_binding_validated": True,
+    "resource_boundary_validated": True,
+    "resource_limits": {
+        "schema_version": 1, "build_bytes": 2**30, "build_inodes": 100000,
+        "export_bytes": 2**28, "export_inodes": 4096,
+    },
+}
+
+
+class EvidencePromotionTests(unittest.TestCase):
+    def reports(self):
+        return (
+            {"status": "verified-proof-objects", "development_only": True},
+            {label: {"development_only": True, "parser_isolation": "development-docker"}
+             for label in ("base", "head")},
+        )
+
+    def test_validated_policy_promotes_exactly_the_markers_the_platform_requires(self):
+        proof, admissions = self.reports()
+        block = runner.promote_evidence(VALIDATED_POLICY, proof, admissions)
+        self.assertEqual(block, {
+            "schema_version": 1, "evidence_profile": "production-evidence-v1",
+            "source_binding_validated": True, "resource_boundary_validated": True,
+        })
+        self.assertIs(proof["development_only"], False)
+        self.assertEqual(proof["checker_isolation"], "native-linux-validated-v1")
+        for report in admissions.values():
+            self.assertIs(report["development_only"], False)
+            self.assertEqual(report["parser_isolation"], "native-linux-validated-v1")
+
+    def test_any_unvalidated_policy_leaves_reports_development_only(self):
+        for change in (
+            {"source_binding_validated": False},
+            {"resource_boundary_validated": False},
+            {"resource_limits": None},
+        ):
+            proof, admissions = self.reports()
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                runner.promote_evidence({**VALIDATED_POLICY, **change}, proof, admissions)
+            self.assertIs(proof["development_only"], True)
+            self.assertIs(admissions["head"]["development_only"], True)
+
+    def test_published_policy_cannot_promote(self):
+        policy = json.loads((Path(__file__).parents[2] / ".choir/certification.json").read_text())
+        proof, admissions = self.reports()
+        with self.assertRaises(ValueError):
+            runner.promote_evidence(policy, proof, admissions)
+
+    def test_refuses_anything_but_unpromoted_development_reports(self):
+        for mutate in (
+            lambda proof, _: proof.pop("development_only"),
+            lambda proof, _: proof.update(development_only=False),
+            lambda _, admissions: admissions["base"].update(development_only=False),
+            lambda _, admissions: admissions["head"].update(parser_isolation="other"),
+        ):
+            proof, admissions = self.reports()
+            mutate(proof, admissions)
+            with self.assertRaises(ValueError):
+                runner.promote_evidence(VALIDATED_POLICY, proof, admissions)
 
 
 if __name__ == "__main__":
