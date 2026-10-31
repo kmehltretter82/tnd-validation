@@ -59,12 +59,21 @@ real comparator accepted the proof.
 `und-validation` fetched and correctly refused, showing results as unavailable, because
 `audit/run.py` emitted no `certification` block. It now keeps the checker's marker and
 emits that block only through `promote_evidence`, under a validated policy. Offline, the
-real generator refused that real report unpromoted and accepted it promoted, producing 28
-results. This has not yet run live.
+real generator refused that real report unpromoted and accepted it promoted. Live,
+`audit-main` then passed at commit `35b72a2` and `und-validation` published all 28 results
+with `production-evidence-v1`; in Chromium and WebKit each showed working source and audit
+links with no errors, offsite requests, or axe violations. That page carries a
+test-deployment notice, because these come from placeholder limits and test flags.
 
 Through the same live gate, four negative-control PRs all failed `comparator` and
 `tnd-audit`: a weakened statement (`statement-mismatch`), `Classical.choice`, a custom
 axiom, and a leftover `sorry` (each `illegal-axiom`).
+
+All six starter tasks then passed `audit/run.py` and the real comparator on the hosted
+runner, one at a time and together. The first attempts found that `*` and `<` were outside
+the parser's allowlist, that a definition cannot be a comparator target, and that `match`
+in a proof creates a helper declaration the checker's inventory refuses. With both quotas
+full and a container killed at its memory limit, the runner kept over 12 GiB available.
 
 The swap matters for budgets: tmpfs may swap, so a quota mount's bytes are not all
 held in RAM here, unlike on the VM.

@@ -25,7 +25,7 @@ structure Config where
 def permittedKinds : Array Name := (#[
   "null", "fieldIdx", "hygieneInfo", "num",
   "term_↔_", "term_∧_", "term_∨_", "term¬_", "term{_:_//_}", "term∃_,_",
-  "term_+_", "term_=_", "term_≤_", "term_++_", "term_×_", "term_∈_", "term[_]", "term_::_",
+  "term_+_", "term_*_", "term_=_", "term_≤_", "term_<_", "term_++_", "term_×_", "term_∈_", "term[_]", "term_::_",
   "Lean.binderIdent", "Lean.explicitBinders", "Lean.unbracketedExplicitBinders",
   "Lean.Parser.Module.header", "Lean.Parser.Module.import",
   "Lean.Parser.Command.declId", "Lean.Parser.Command.declModifiers",

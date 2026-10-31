@@ -6,6 +6,42 @@
       "source_path": "tasks/map_exists.lean",
       "namespace_name": "TNDTask",
       "expected_exports": ["TNDTask.mapExists"]
+    },
+    {
+      "id": "not_not_em",
+      "source_path": "tasks/not_not_em.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": ["TNDTask.notNotEm"]
+    },
+    {
+      "id": "not_exists_iff",
+      "source_path": "tasks/not_exists_iff.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": ["TNDTask.notExistsIff"]
+    },
+    {
+      "id": "em_of_decidable",
+      "source_path": "tasks/em_of_decidable.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": ["TNDTask.emOfDecidable"]
+    },
+    {
+      "id": "two_mul",
+      "source_path": "tasks/two_mul.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": ["TNDTask.twoMul"]
+    },
+    {
+      "id": "length_reverse",
+      "source_path": "tasks/length_reverse.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": ["TNDTask.lengthReverse"]
+    },
+    {
+      "id": "select_head_witness",
+      "source_path": "tasks/select_head_witness.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": ["TNDTask.selectHeadWitness"]
     }
   ]
 }

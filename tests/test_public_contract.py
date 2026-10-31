@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -142,3 +143,22 @@ def test_resubmission_returns_existing_pr_metadata(monkeypatch, capsys):
     assert json.loads(capsys.readouterr().out) == {
         "pr_number": 18, "pr_url": url, "reused_existing_pr": True,
     }
+
+
+def test_every_registered_task_matches_its_admission_policy_and_placeholder():
+    registry = json.loads(Path("audit/tasks.json").read_text())["tasks"]
+    policy = {
+        entry["id"]: entry
+        for entry in json.loads(Path("audit/admission/policy.json").read_text())["task_files"]
+    }
+    assert {task["id"] for task in registry} == set(policy)
+    assert len(registry) == 7
+    for task in registry:
+        entry = policy[task["id"]]
+        text = Path(task["source_path"]).read_bytes()
+        assert entry["source_path"] == task["source_path"]
+        assert entry["declarations"] == task["expected_exports"]
+        assert hashlib.sha256(text).hexdigest() == entry["challenge_sha256"]
+        assert b"sorry" in text
+        # The comparator compares statements, so a definition cannot be a task.
+        assert b"\ntheorem " in text and b"\ndef " not in text

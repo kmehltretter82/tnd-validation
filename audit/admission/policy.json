@@ -128,6 +128,100 @@
         "v"
       ],
       "challenge_sha256": "056330ec1a57d9ba56c838f88d0f834fff75e845b4452126e97927bdf18f761d"
+    },
+    {
+      "id": "not_not_em",
+      "source_path": "tasks/not_not_em.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.notNotEm"
+      ],
+      "universes": [],
+      "challenge_sha256": "c5c31d3eb21d6688574f21b3be534faa0eb774ea9377cb0e506d80bbffb22b85"
+    },
+    {
+      "id": "not_exists_iff",
+      "source_path": "tasks/not_exists_iff.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.notExistsIff"
+      ],
+      "universes": [
+        "u"
+      ],
+      "challenge_sha256": "06d9a7880cec5ae25168c383a0372a96559ed653a3ef77a5f2668cc7a9a9a850"
+    },
+    {
+      "id": "em_of_decidable",
+      "source_path": "tasks/em_of_decidable.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.emOfDecidable"
+      ],
+      "universes": [],
+      "challenge_sha256": "f226b582d25c89e61c39536f5555a1fedaa22780e68fe3cdfd5f0a55fdd432f5"
+    },
+    {
+      "id": "two_mul",
+      "source_path": "tasks/two_mul.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.twoMul"
+      ],
+      "universes": [],
+      "challenge_sha256": "8294a6d788d6246530f91940d8d35550070c20df4198538b3f25cf8b27a1f108"
+    },
+    {
+      "id": "length_reverse",
+      "source_path": "tasks/length_reverse.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.lengthReverse"
+      ],
+      "universes": [
+        "u"
+      ],
+      "challenge_sha256": "b1dcb572b0b75c35e777800cdd3addc43f4f50058ac607d3466e6753697d26d8"
+    },
+    {
+      "id": "select_head_witness",
+      "source_path": "tasks/select_head_witness.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.selectHeadWitness"
+      ],
+      "universes": [],
+      "challenge_sha256": "3d279313e0880872be703f91140ae7a519e871d08ce545e9443f5b73ad36c614"
     }
   ]
 }

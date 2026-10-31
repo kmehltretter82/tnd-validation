@@ -40,7 +40,7 @@ gh issue create --repo kmehltretter82/tndlib \
   --title 'Request: your result' --body-file request.md
 ```
 
-This publishes a proposal, not a task. Lean syntax is optional. A maintainer reviews the source and intended meaning, commits the exact Lean statement outside certified imports, and approves its inventory before publishing a separate task. Reference the proposal from the task prose. Neither a request title nor an editable label establishes a theorem statement or constructive verification.
+GitHub silently drops labels set on a new issue by anyone without push access, and the public index lists only `tnd/proposal` issues. So a request made this way does not appear on the site until a maintainer adds that label; the form applies it for you. This publishes a proposal, not a task. Lean syntax is optional. A maintainer reviews the source and intended meaning, commits the exact Lean statement outside certified imports, and approves its inventory before publishing a separate task. Reference the proposal from the task prose. Neither a request title nor an editable label establishes a theorem statement or constructive verification.
 
 ## Task schema and maintainer approval
 
@@ -67,7 +67,7 @@ The example SHA is a placeholder. Before publication, replace it with the full r
 | `choir-task-version` | Required integer `1`. Unknown versions and extra fields are rejected. |
 | `type` | Choir accepts `prove`, `golf`, or `index`; the TND pilot publishes `prove` tasks. |
 | `target_file` | Required repository-relative path without `..` or backslashes; Lean intake requires `.lean`. TND additionally requires an approved task-registry path. |
-| `target_decl` | Required dot-separated Lean identifier; must exactly match the approved task export. |
+| `target_decl` | Required dot-separated Lean identifier; must exactly match the approved task export and name a theorem, because the comparator compares statements. |
 | `project_ref` | Required `repo`, `commit`, `toolchain`; no extra fields. Choir accepts abbreviated hashes of at least seven hex characters, but TND publishes full 40-character hashes and Lean `4.35.0`. |
 | `deps` | Required list of positive issue numbers; use `[]` when empty. Open dependencies produce client advisories, not a hard claim gate. |
 | `blueprint_ref` | Optional string naming a planning node; omit when unused. |
