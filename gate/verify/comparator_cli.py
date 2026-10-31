@@ -234,7 +234,8 @@ def materialize_workspace(
             continue
         _write(dest / path, _git("show", f"{head_sha}:{path}"))
 
-    _write(dest / "lakefile.toml", workspace_lakefile(base_lakefile))
+    target_module = module_of_path(target_file)
+    _write(dest / "lakefile.toml", workspace_lakefile(base_lakefile, target_module))
     _write(dest / "lean-toolchain", toolchain)
     with contextlib.suppress(_ExternalError):  # no manifest = no locked deps
         _write(
@@ -243,7 +244,6 @@ def materialize_workspace(
         )
 
     root_libs = lean_lib_names(base_lakefile)
-    target_module = module_of_path(target_file)
     _write(dest / "Challenge.lean", challenge_root(root_libs, target_module))
     _write(dest / "Solution.lean", solution_root(root_libs, target_module))
     _write(dest / f"{CHALLENGE_PREFIX}.lean", choirbase_root(root_libs))

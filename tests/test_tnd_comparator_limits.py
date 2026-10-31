@@ -14,7 +14,7 @@ import pytest
 from audit import resource_stages
 from audit import run as audit_runner
 from audit.resource_boundary import Limits
-from gate.verify import tnd_comparator
+from gate.verify import comparator, tnd_comparator
 
 
 @pytest.fixture
@@ -431,3 +431,16 @@ def test_repeated_runs_have_distinct_cleanup_names(sandbox):
     calls.unlink()
     tnd_comparator.run_container(*paths)
     assert assert_removed_same_container(calls) != first
+
+
+def test_task_outside_the_published_library_gets_a_workspace_library():
+    base = 'name = "tndlib"\n\n[[lean_lib]]\nname = "TNDLib"\n'
+    libs = comparator.lean_lib_names(comparator.workspace_lakefile(base, "tasks.map_exists"))
+    assert libs == ["TNDLib", "Challenge", "Solution", "ChoirBase", "tasks"]
+    published = comparator.lean_lib_names(comparator.workspace_lakefile(base, "TNDLib.Logic"))
+    assert published.count("TNDLib") == 1
+    assert "tasks" not in comparator.lean_lib_names(comparator.workspace_lakefile(base))
+    assert "tasks" not in comparator.lean_lib_names(base)
+    for reserved in ("Solution.x", "Challenge", "ChoirBase.tasks.map_exists"):
+        with pytest.raises(comparator.ComparatorConfigError):
+            comparator.workspace_lakefile(base, reserved)

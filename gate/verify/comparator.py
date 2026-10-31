@@ -377,12 +377,16 @@ def lean_lib_names(lakefile_text: str) -> list[str]:
     return [lib["name"] for lib in libs if isinstance(lib, dict) and "name" in lib]
 
 
-def workspace_lakefile(base_lakefile_text: str) -> str:
-    """Base lakefile text + the three generated `[[lean_lib]]` blocks.
+def workspace_lakefile(base_lakefile_text: str, target_module: str | None = None) -> str:
+    """Base lakefile text + the generated `[[lean_lib]]` blocks.
 
     Appending array-of-table blocks at EOF is valid TOML as long as no
     other top-level table follows — the base text is preserved verbatim
     as the prefix, so parseability of the result is covered by tests.
+
+    TND keeps tasks outside its published library, so a target whose top-level
+    module no project library declares gets its own block here, in the generated
+    workspace only; otherwise `Solution.lean` could not import it.
     """
     existing = lean_lib_names(base_lakefile_text)
     collisions = RESERVED_LIB_NAMES.intersection(existing)
@@ -390,10 +394,14 @@ def workspace_lakefile(base_lakefile_text: str) -> str:
         raise ComparatorConfigError(
             f"project lakefile already defines reserved lib(s): {sorted(collisions)}"
         )
-    blocks = "".join(
-        f'\n[[lean_lib]]\nname = "{lib}"\n'
-        for lib in ("Challenge", "Solution", CHALLENGE_PREFIX)
-    )
+    libs = ["Challenge", "Solution", CHALLENGE_PREFIX]
+    if target_module is not None:
+        top = target_module.split(".", 1)[0]
+        if top in RESERVED_LIB_NAMES:
+            raise ComparatorConfigError(f"target uses reserved module root: {top}")
+        if top not in existing:
+            libs.append(top)
+    blocks = "".join(f'\n[[lean_lib]]\nname = "{lib}"\n' for lib in libs)
     sep = "" if base_lakefile_text.endswith("\n") else "\n"
     return (
         base_lakefile_text
