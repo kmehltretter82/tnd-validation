@@ -5,4 +5,5 @@ import TNDLib.List
 import TNDLib.Finite
 import TNDLib.Algebra
 
+import TNDLib.Existential
 /-! The initial standalone constructive TNDLib corpus. -/

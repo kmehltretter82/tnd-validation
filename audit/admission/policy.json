@@ -10,7 +10,8 @@
         "TNDLib.Nat",
         "TNDLib.List",
         "TNDLib.Finite",
-        "TNDLib.Algebra"
+        "TNDLib.Algebra",
+        "TNDLib.Existential"
       ],
       "declarations": [],
       "universes": []
@@ -108,6 +109,21 @@
         "TNDLib.Algebra.productSingleton"
       ],
       "universes": []
+    },
+    {
+      "path": "TNDLib/Existential.lean",
+      "module_name": "TNDLib.Existential",
+      "namespace_name": "TNDLib.Existential",
+      "imports": [
+        "Init"
+      ],
+      "declarations": [
+        "TNDLib.Existential.mapExists"
+      ],
+      "universes": [
+        "u",
+        "v"
+      ]
     }
   ],
   "task_files": [
