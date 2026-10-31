@@ -1,14 +1,8 @@
 import TNDLib
 
-/-!
-Approved starter task. This placeholder is a task statement, not part of the
-certified TNDLib exports.
--/
-
 namespace TNDTask
 
-/-- Excluded middle cannot be refuted, even without assuming it. -/
-theorem notNotEm (p : Prop) : ¬¬(p ∨ ¬p) := by
-  sorry
+theorem notNotEm (p : Prop) : ¬¬(p ∨ ¬p) :=
+  fun h => h (Or.inr (fun hp => h (Or.inl hp)))
 
 end TNDTask
