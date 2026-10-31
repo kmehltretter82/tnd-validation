@@ -56,6 +56,8 @@ jobs:
         working-directory: .comparator-tool
         env:
           LEAN_NUM_THREADS: '2'
+          # Lake's pinned partial clones need lazy fetch; only this trusted build.
+          GIT_NO_LAZY_FETCH: '0'
         run: lake build lean4export comparator
       - name: Compare the approved task in the isolated container
         env:

@@ -206,6 +206,14 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertEqual(allowed[0]["env"]["GIT_NO_LAZY_FETCH"], "0")
         workflow = yaml.safe_load((ROOT / ".github/workflows/verify-tnd.yml").read_text())
         self.assertEqual(workflow["env"]["GIT_NO_LAZY_FETCH"], "1")
+        comparator = yaml.safe_load((ROOT / ".github/workflows/verify-comparator.yml").read_text())
+        self.assertEqual(comparator["env"]["GIT_NO_LAZY_FETCH"], "1")
+        allowed = [
+            step for step in comparator["jobs"]["comparator"]["steps"]
+            if "GIT_NO_LAZY_FETCH" in step.get("env", {})
+        ]
+        self.assertEqual([step["run"] for step in allowed], ["lake build lean4export comparator"])
+        self.assertEqual(allowed[0]["working-directory"], ".comparator-tool")
 
     def test_maintainer_ci_does_not_download_an_unverified_installer(self):
         text = (ROOT / ".github/workflows/maintainer-ci.yml").read_text()
