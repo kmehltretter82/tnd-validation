@@ -74,7 +74,9 @@ python3 audit/admission/admit.py --lean "$(elan which lean)" \
   --source "$TND_ADMISSION_DIR" --task map_exists --role solution
 ```
 
-For the pilot, `map_exists` is the only maintained task ID ([unapproved drafts](docs/STARTER-QUEUE.md) are not yet tasks). A successful report
+Maintained task IDs are listed in `audit/tasks.json`; replace `map_exists` above with yours. See [the starter queue](docs/STARTER-QUEUE.md).
+
+**Avoid `match` in a task proof.** It compiles to a hidden helper declaration, and the checker refuses any declaration outside the approved inventory, reporting `solution exported declaration inventory differs from approved manifest`. The parser and comparator both accept such a proof, so this appears late. Use eliminators such as `Exists.elim` and `Or.elim` instead. A successful report
 has `status: "admitted-source-syntax"`; a nonzero exit with
 `status: "rejected"` means the source shape is outside the current subset. Its
 free-text `reason` is diagnostic and not yet a stable automation code. Delete

@@ -1,7 +1,7 @@
 # Proposed production resource limits
 
-**Proposal for review, not a selection.** `.choir/certification.json` still has no limits
-and both flags are false. Setting them is the certification decision; see `docs/EVIDENCE.md`
+**Accepted by the maintainer on 2026-10-31, subject to the measurements below; not yet in
+force.** `.choir/certification.json` still has no limits and both flags are false. Setting them is the certification decision; see `docs/EVIDENCE.md`
 in `und`.
 
 | Limit | Proposed | Measured use | Headroom |

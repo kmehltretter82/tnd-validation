@@ -33,6 +33,12 @@ def main() -> int:  # noqa: PLR0915
 
     add("initial_corpus", accepted=True)
     add(
+        "arithmetic_and_order_notation",
+        "TNDLib/Nat.lean",
+        lambda s: s.replace("n ≤ sumTo n", "n * 1 < sumTo n + 1", 1),
+        accepted=True,
+    )
+    add(
         "nested_comments_are_data",
         "TNDLib.lean",
         lambda s: '/- outer /- #eval "not executed" -/ initialize text -/\n' + s,

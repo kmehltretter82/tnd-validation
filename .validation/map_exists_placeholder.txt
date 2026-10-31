@@ -1,0 +1,17 @@
+import TNDLib
+
+/-!
+Approved example task: transport an existential witness through a function.
+This placeholder is a task statement, not part of the certified TNDLib exports.
+-/
+
+universe u v
+
+namespace TNDTask
+
+/-- An explicit preimage witness yields a witness in the codomain. -/
+theorem mapExists {α : Type u} {β : Type v} (f : α → β) (p : β → Prop) :
+    (∃ x : α, p (f x)) → ∃ y : β, p y := by
+  sorry
+
+end TNDTask

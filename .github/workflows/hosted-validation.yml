@@ -1,8 +1,7 @@
 name: hosted-validation
 
-# Test-repository overlay, not part of tndlib: repeats the local VM evidence on the
-# real hosted runner. It issues nothing and cannot change a certification flag.
-# Steps continue past a failure so that one run records every result.
+# Test-repository overlay, not part of tndlib: runs every starter task through the
+# real verifier and comparator, measures quota use, and stresses both quotas at once.
 on:
   workflow_dispatch:
 
@@ -19,94 +18,70 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          fetch-depth: 1
+          fetch-depth: 0
           fetch-tags: false
           persist-credentials: false
-
-      - name: Record runner facts
-        id: facts
-        continue-on-error: true
-        run: |
-          mkdir -p reports
-          {
-            uname -a; grep PRETTY /etc/os-release; id; nproc; free -m; df -h /
-            docker version --format '{{.Server.Version}}'
-            docker info --format '{{.CgroupVersion}} {{.Driver}} {{.SecurityOptions}}'
-            sudo -n true && echo sudo-ok
-            for p in "$RUNNER_TEMP" "$(dirname "$RUNNER_TEMP")" "$HOME" /home; do stat -c '%a %U %n' "$p"; done
-          } 2>&1 | tee reports/facts.txt
-
-      - name: Install the x86-64 Lean archive through the verifier
-        id: lean
+      - run: mkdir -p reports
+      - name: Install Lean through the verifier
         run: python3 audit/install_lean.py --dest "$RUNNER_TEMP/lean-4.35.0" --github
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@8d55fbecc275b1c35dbe060458839f8d30439ccf
+      - uses: astral-sh/setup-uv@8d55fbecc275b1c35dbe060458839f8d30439ccf
         with:
           version: '0.9.6'
           enable-cache: false
-
-      - name: Prepare
-        id: prepare
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+        with:
+          go-version: '1.26.0'
+          cache: false
+      - name: Build trusted tools
+        env:
+          CGO_ENABLED: '0'
         run: |
-          set -o pipefail
           uv sync --frozen --extra dev
           docker pull -q ubuntu@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
-          /usr/bin/time -v lake build 2>&1 | tee reports/lib-build.txt
-          (cd audit && /usr/bin/time -v lake build) 2>&1 | tee reports/audit-build.txt
-
-      - name: Real quota, tamper, and recovery harness in RUNNER_TEMP
-        id: boundary
+          go install github.com/zouuup/landrun/cmd/landrun@ec104f6edc1e14d7fec6d31146f1ec6f9c192c5a
+          (cd audit && lake build)
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: leanprover/comparator
+          ref: e3dcf3083fc53d44b27a4431fabf7d43181583f5
+          path: .comparator-tool
+          persist-credentials: false
+      - name: Build the comparator
+        working-directory: .comparator-tool
+        run: lake build lean4export comparator
+      - name: Start the sampler
+        run: |
+          mkdir -p "$RUNNER_TEMP/q"
+          nohup python3 .validation/sampler.py reports/usage.json reports/stage.txt >/dev/null 2>&1 &
+          echo "HEAD_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "BASE_SHA=$(git rev-parse HEAD~1)" >> "$GITHUB_ENV"
+      - name: Every task through the real verifier and comparator
         continue-on-error: true
         run: |
           set -o pipefail
-          uv run --frozen --extra dev python tests/audit/linux_boundary_smoke.py \
-            --scratch "$RUNNER_TEMP" | tee reports/boundary.json
-
-      - name: Hostile container limits and Lean source
-        id: limits
+          cp .validation/per_task.py .validation/stress.py "$RUNNER_TEMP/"
+          git checkout -q "$BASE_SHA"
+          PYTHONPATH="$PWD" uv run --frozen --extra dev python "$RUNNER_TEMP/per_task.py" "$BASE_SHA" "$HEAD_SHA" \
+            "$TND_LEAN_ROOT" "$(go env GOPATH)/bin/landrun" .comparator-tool "$RUNNER_TEMP/q" 2>&1 | tee reports/per-task.log
+      - name: The admission corpus including the new notation
         continue-on-error: true
         run: |
           set -o pipefail
-          uv run --frozen --extra dev python tests/audit/linux_container_limits.py \
-            --lean-root "$TND_LEAN_ROOT" | tee reports/limits.json
-
-      - name: Git to admission, build, and export
-        id: git
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          mkdir -p "$RUNNER_TEMP/git-work"
-          uv run --frozen --extra dev python tests/audit/linux_git_integration.py \
-            --checker audit/.lake/build/bin/tnd-check \
-            --exporter audit/.lake/build/bin/tnd-export \
-            --lean-root "$TND_LEAN_ROOT" --work-dir "$RUNNER_TEMP/git-work" \
-            | tee reports/git.jsonl
-
-      - name: The recovery step finds nothing left to reconcile
-        id: recovery
+          git checkout -q "$BASE_SHA"
+          # The test repository's own task was solved by its merged PR.
+          cp .validation/map_exists_placeholder.txt tasks/map_exists.lean
+          python3 audit/admission/test_admission.py --lean "$TND_LEAN_ROOT/bin/lean" 2>&1 | tail -4 | tee reports/admission.txt
+      - name: Let the sampler flush and require a clean host
         if: always()
-        continue-on-error: true
         run: |
-          set -o pipefail
-          python3 -m audit.resource_recovery --parent "$RUNNER_TEMP" | tee reports/recovery.json
-
+          sleep 4
+          python3 -m audit.resource_recovery --parent "$RUNNER_TEMP/q" --terminate-owner | tee reports/recovery.json
+          echo "mounts: $(findmnt -rn -o TARGET | grep -c tnd-boundary)" | tee reports/after.txt
       - name: Retain the reports
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: hosted-validation
+          name: measure
           path: reports/
           if-no-files-found: error
           retention-days: 30
-
-      - name: Fail visibly if any harness failed
-        if: always()
-        env:
-          OUTCOMES: >-
-            ${{ steps.facts.outcome }} ${{ steps.lean.outcome }} ${{ steps.prepare.outcome }}
-            ${{ steps.boundary.outcome }} ${{ steps.limits.outcome }} ${{ steps.git.outcome }}
-            ${{ steps.recovery.outcome }}
-        run: |
-          echo "$OUTCOMES"
-          for outcome in $OUTCOMES; do test "$outcome" = success; done

@@ -46,7 +46,7 @@ grouped below. No other node kind is accepted.
 | `num` | The trusted numeral elaborator and `OfNat` instance synthesis. Candidate instance commands are unavailable. Other literal families, including strings and characters, have different node kinds and are rejected. |
 | `term_↔_`, `term_∧_`, `term_∨_`, `term¬_`, `term∃_,_` | Fixed `Init` logical notation expands to the corresponding trusted logical constants and binders. There is no candidate-defined notation or macro environment. |
 | `term{_:_//_}` | Fixed subtype-constructor notation. Expected-type elaboration and ordinary applications are used; no command or tactic is run. |
-| `term_+_`, `term_=_`, `term_≤_`, `term_++_`, `term_×_`, `term_∈_` | Fixed `Init` notation, name resolution, and where applicable typeclass synthesis for arithmetic, append, products, and membership. The candidate cannot register instances or syntax, but an approved declaration may receive an instance as an explicit parameter. Exact statement and dependency checks remain mandatory. |
+| `term_+_`, `term_*_`, `term_=_`, `term_≤_`, `term_<_`, `term_++_`, `term_×_`, `term_∈_` | Fixed `Init` notation, name resolution, and where applicable typeclass synthesis for arithmetic, append, products, and membership. The candidate cannot register instances or syntax, but an approved declaration may receive an instance as an explicit parameter. Exact statement and dependency checks remain mandatory. |
 | `term[_]`, `term_::_` | Fixed list-literal and list-constructor macros from `Init`; their element terms are recursively checked. Array, quotation, interpolation, and file-inclusion syntax is not included. |
 
 Macro expansion in this section is trusted closed `Init` behavior. Admission
