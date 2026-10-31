@@ -52,8 +52,9 @@ ran end to end on a real proof PR for the first time and `tnd-audit`, `rebuild`,
 of the pinned tools failed under `GIT_NO_LAZY_FETCH=1`, in both the shared setup and the
 comparator workflow; lazy fetch is now allowed for those two trusted build steps only.
 The generated comparator workspace also could not import a task outside the published
-library. The fix passes a real local Lake build but has **not yet run on the hosted
-comparator**, so no run has yet had all eight required checks green.
+library; with that fixed, all eight required checks passed on the hosted runner and the
+real comparator accepted the proof. Negative controls through the real comparator
+(weakened statement, `Classical.choice`, custom axiom) have not been run.
 
 The swap matters for budgets: tmpfs may swap, so a quota mount's bytes are not all
 held in RAM here, unlike on the VM.
