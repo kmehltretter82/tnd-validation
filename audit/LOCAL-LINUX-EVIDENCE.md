@@ -46,6 +46,15 @@ files, 2,500 changed lines, a protected-path edit, and a symlink at the task pat
 symlink's reason names an inconsistent listing rather than the file type, so that
 message is not a precise diagnosis.
 
+With placeholder test-only certification flags in that repository, `audit/run.py verify`
+ran end to end on a real proof PR for the first time and `tnd-audit`, `rebuild`, and
+`trust-report` went green. This found two defects mocked tests had hidden. `lake build`
+of the pinned tools failed under `GIT_NO_LAZY_FETCH=1`, in both the shared setup and the
+comparator workflow; lazy fetch is now allowed for those two trusted build steps only.
+The generated comparator workspace also could not import a task outside the published
+library. The fix passes a real local Lake build but has **not yet run on the hosted
+comparator**, so no run has yet had all eight required checks green.
+
 The swap matters for budgets: tmpfs may swap, so a quota mount's bytes are not all
 held in RAM here, unlike on the VM.
 
@@ -87,8 +96,8 @@ describe today's small corpus and say little about an adversarial or larger buil
 - Host memory under simultaneous tmpfs use, now on a runner that has swap.
 - A server that over-delivers objects despite the filter. GitHub did not, and this
   cannot be forced there; `tests/test_tnd_fetch.py` covers only a local Git server.
-- `audit/run.py verify` end to end. Its guard correctly refuses while the flags are
-  false, and it must not be bypassed to obtain this result.
+- `verify` under real limits. The hosted run used placeholder limits in a test
+  repository, and reports remain `development_only`, which the platform rejects.
 - Build-stage CPU: the build profile has `--cpus` but no CPU-time ulimit. `command()`
   in `audit/run.py` sets a 900 s wall-clock limit per stage and the named container
   is then force-removed, but that path was read in the code, not observed firing.
