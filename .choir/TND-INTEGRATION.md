@@ -120,6 +120,20 @@ events, so merging with it would silently skip `issue-close-on-merge` and
 same strict administrator-enforced rules as everyone else. Its exact identity
 is a reviewed decision that has not been made.
 
+On `kmehltretter82/tnd-validation` (not a release) these have been observed live:
+strict administrator-enforced protection with all eight contexts rejected the owner's
+direct push (`GH006`); `create-task`, intake, `worker list`, `claim`, a competing claim
+(`LOST_RACE`), `heartbeat`, `release`, reclaim, and `submit` worked; a weakened statement
+failed `statement-equiv` and `statement-immutability` and passed again once corrected;
+and the certification guard kept `tnd-audit` red and GitHub's merge state `BLOCKED`.
+Three rapid pushes to one PR queued in the shared lane, one running and one pending with
+none cancelled, and a rerun completed as attempt 2 of its run. That covers only the
+`verify-tnd` side, because `tnd-merge` has not run, and it does not show the lane's
+capacity limit. The user ran `gh pr merge` on PR #2, with and without `--admin`, and
+GitHub refused both: "the base branch policy prohibits the merge" and "3 of 8 required
+status checks are failing". The project's own merge command has not been run there, and
+no successful merge has been observed, so the variable below remains unset.
+
 Before setting the variable, a test repository must show that initial runs and
 all full/partial reruns acquire the same cross-workflow group, that `queue: max`
 never drops an attempt within the supported load, that the merge token obeys

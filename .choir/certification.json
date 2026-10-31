@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "source_binding_validated": false,
-  "resource_boundary_validated": false,
-  "resource_limits": null,
-  "reason": "Independent replay checks proof objects, but source-elaboration semantics and the bounded build/export resource boundary have not been validated on the target Linux runner. Certification, proof merges, and public evidence publication remain disabled until both boundaries and exact limits are validated."
+  "source_binding_validated": true,
+  "resource_boundary_validated": true,
+  "resource_limits": {"schema_version": 1, "build_bytes": 1073741824, "build_inodes": 100000, "export_bytes": 268435456, "export_inodes": 4096},
+  "reason": "TEST REPOSITORY ONLY. Flags enabled to exercise the audit path; this certifies nothing and must never reach tndlib."
 }

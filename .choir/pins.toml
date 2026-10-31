@@ -1,0 +1,3 @@
+# tndlib has no Mathlib dependency, so Choir's Mathlib search advice does not apply.
+[tools]
+mathlib_search = "off"

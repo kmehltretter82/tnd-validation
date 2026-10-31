@@ -26,6 +26,9 @@ Docker 28.0.4, overlay2, cgroup v2, built-in seccomp, `sudo` available.
 - `maintainer-regression` passed its whole matrix, and `audit-main` stopped at the
   certification guard with every later step skipped. Both ran on that commit.
 
+Four `hosted-validation` runs have now passed, the last on commit `83a2db7`, after the
+recovery fix.
+
 Failure behavior on the same runner, holding real mounts and a container attached as
 production attaches them (commit `83a2db7`):
 
@@ -35,6 +38,13 @@ production attaches them (commit `83a2db7`):
   of the owner each recovered completely, including the orphaned owner.
 - Killing `Runner.Worker` ended the job as a failure. No later step ran and no report
   was uploaded, so that case rests on VM disposal, as designed.
+
+Filtered acquisition ran live in `verify-tnd` through GitHub's real API and Git server.
+A valid proof PR passed it. Five hostile PRs were refused at that step, before any
+toolchain or candidate code ran: a 300 KB blob (absent from the filtered fetch), 12
+files, 2,500 changed lines, a protected-path edit, and a symlink at the task path. The
+symlink's reason names an inconsistent listing rather than the file type, so that
+message is not a precise diagnosis.
 
 The swap matters for budgets: tmpfs may swap, so a quota mount's bytes are not all
 held in RAM here, unlike on the VM.
@@ -75,7 +85,8 @@ describe today's small corpus and say little about an adversarial or larger buil
 - Recovery inside the real `verify-tnd` workflow rather than a dedicated test workflow.
 - The merge lane.
 - Host memory under simultaneous tmpfs use, now on a runner that has swap.
-- Filtered-fetch or server over-delivery.
+- A server that over-delivers objects despite the filter. GitHub did not, and this
+  cannot be forced there; `tests/test_tnd_fetch.py` covers only a local Git server.
 - `audit/run.py verify` end to end. Its guard correctly refuses while the flags are
   false, and it must not be bypassed to obtain this result.
 - Build-stage CPU: the build profile has `--cpus` but no CPU-time ulimit. `command()`

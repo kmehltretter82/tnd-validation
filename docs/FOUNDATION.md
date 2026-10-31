@@ -62,7 +62,12 @@ measurements of the hosted runner or a selected resource budget.
 
 ## Research references and provenance
 
-Riccardo Brasca's [`less_choice` work](https://leanprover-community.github.io/archive/stream/113488-general/topic/Make.20mathlib.20less.20dependent.20on.20choice.html) demonstrates how a classical dependency in a basic proof can propagate widely. SDG's [linter and dependency setup](https://github.com/riccardobrasca/SDG) were studied as design references. No Mathlib or SDG source has been imported into the corpus. The audit tool's comparator adaptation retains its attribution in its source header.
+Riccardo Brasca's [`less_choice` work](https://leanprover-community.github.io/archive/stream/113488-general/topic/Make.20mathlib.20less.20dependent.20on.20choice.html) demonstrates how a classical dependency in a basic proof can propagate widely. SDG's [linter and dependency setup](https://github.com/riccardobrasca/SDG) were studied as design references. Revisions read on 2026-10-30, after the corpus was written, for this record: the
+`less_choice` branch and open Mathlib PR #35685 at `c2934be473385c5b1e3a639cad5c00547d65e354`,
+and SDG at `e4cd622492aba9be421ec0abcf152f58a0ee98df` (Apache-2.0; toolchain
+`riccardobrasca/lean4:v4.35.0-less-choice`; linter `SDG/Linters/choice.lean`; unique-choice
+axiom `SDG/Axiom/UniqueChoice.lean`). The revisions used for the original study were not
+recorded. No Mathlib or SDG source has been imported into the corpus. The audit tool's comparator adaptation retains its attribution in its source header.
 
 ## Open release gates
 
