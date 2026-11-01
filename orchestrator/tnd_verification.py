@@ -101,6 +101,51 @@ def require_merge_protection(protection: Mapping[str, Any]) -> None:
         )
 
 
+def _targets_main_branch(ruleset: Mapping[str, Any]) -> bool:
+    if ruleset.get("enforcement") != "active" or ruleset.get("target") != "branch":
+        return False
+    conditions = ruleset.get("conditions")
+    ref_name = conditions.get("ref_name") if isinstance(conditions, Mapping) else None
+    include = ref_name.get("include") if isinstance(ref_name, Mapping) else None
+    exclude = ref_name.get("exclude") if isinstance(ref_name, Mapping) else None
+    if not isinstance(include, list) or not isinstance(exclude, list) or exclude:
+        return False
+    return bool({"~DEFAULT_BRANCH", "refs/heads/main"} & set(include))
+
+
+def require_app_only_merge_ruleset(rulesets: Any, *, app_id: int) -> None:
+    """Require an active main-branch ruleset restricting updates to the merge App alone."""
+    if isinstance(app_id, bool) or not isinstance(app_id, int) or app_id < 1:
+        raise ValueError("TND merge App ID must be a positive integer")
+    if not isinstance(rulesets, list) or not rulesets:
+        raise ValueError("TND requires an active main-branch ruleset restricting direct merges")
+    for ruleset in rulesets:
+        if not isinstance(ruleset, Mapping) or not _targets_main_branch(ruleset):
+            continue
+        rules = ruleset.get("rules")
+        bypass = ruleset.get("bypass_actors")
+        if not isinstance(rules, list) or not isinstance(bypass, list):
+            continue
+        rule_types = {
+            rule.get("type") for rule in rules if isinstance(rule, Mapping)
+        }
+        if "update" not in rule_types:
+            continue
+        if len(bypass) == 1 and isinstance(bypass[0], Mapping):
+            actor = bypass[0]
+            if (
+                actor.get("actor_type") == "Integration"
+                and not isinstance(actor.get("actor_id"), bool)
+                and actor.get("actor_id") == app_id
+                and actor.get("bypass_mode") == "always"
+            ):
+                return
+    raise ValueError(
+        "TND requires an active main-branch update ruleset whose only bypass actor "
+        f"is GitHub App {app_id}"
+    )
+
+
 def run_title(number: int, head: str, base: str) -> str:
     return f"TND PR {number} head:{head} base:{base}"
 

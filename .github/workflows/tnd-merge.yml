@@ -55,12 +55,15 @@ jobs:
 
       - name: Merge the exact head after the complete preflight
         env:
-          GH_TOKEN: ${{ secrets.TND_MERGE_TOKEN }}
+          TND_MERGE_APP_ID: ${{ secrets.TND_MERGE_APP_ID }}
+          TND_MERGE_APP_PRIVATE_KEY: ${{ secrets.TND_MERGE_APP_PRIVATE_KEY }}
+          TND_MERGE_ACTOR: ${{ github.actor }}
           REPO: ${{ github.repository }}
           PR: ${{ inputs.pr }}
           HEAD_SHA: ${{ inputs.head_sha }}
         run: |
           set -euo pipefail
-          test -n "$GH_TOKEN"
+          test -n "$TND_MERGE_APP_ID"
+          test -n "$TND_MERGE_APP_PRIVATE_KEY"
           uv run --frozen --extra dev python -m orchestrator.merge_lane \
             --repo "$REPO" --pr "$PR" --head-sha "$HEAD_SHA"

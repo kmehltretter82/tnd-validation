@@ -33,8 +33,14 @@ from dataclasses import asdict, dataclass, replace
 from gate.checks import is_blocking, missing_required
 from gate.state.close_on_merge import parse_closing_refs
 from gate.verify.tnd_policy import rejected_paths
+from orchestrator.governance import (
+    has_maintainer_marker,
+    require_review_authorization,
+    validate_maintainer_pr_contract,
+)
 from orchestrator.tnd_verification import (
     complete_run_listing,
+    require_app_only_merge_ruleset,
     require_merge_protection,
     require_verified_run,
 )
@@ -337,7 +343,113 @@ def missing_required_checks(pr: PRView) -> list[str]:
     return missing_required(c.name for c in pr.checks)
 
 
-def _require_tnd_merge_state(repo: str, pr: PRView) -> None:
+def _has_green_maintainer_regression(pr: PRView) -> bool:
+    matching = [
+        c for c in pr.checks
+        if c.name == "regression" or c.name.endswith("/ regression")
+    ]
+    return bool(matching) and all(
+        c.status == "COMPLETED" and c.conclusion == "SUCCESS" for c in matching
+    )
+
+
+def _fetch_detailed_rulesets(repo: str) -> list[dict[str, object]]:
+    summary = json.loads(_gh("api", f"repos/{repo}/rulesets"))
+    if not isinstance(summary, list):
+        raise ValueError("GitHub ruleset listing is not a JSON list")
+    detailed: list[dict[str, object]] = []
+    for item in summary:
+        if not isinstance(item, dict):
+            raise ValueError("GitHub ruleset entry is invalid")
+        if item.get("enforcement") != "active" or item.get("target") != "branch":
+            continue
+        if "rules" in item and "conditions" in item and "bypass_actors" in item:
+            detailed.append(item)
+            continue
+        ruleset_id = item.get("id")
+        if isinstance(ruleset_id, bool) or not isinstance(ruleset_id, int) or ruleset_id < 1:
+            raise ValueError("GitHub ruleset summary has an invalid ID")
+        full = json.loads(_gh("api", f"repos/{repo}/rulesets/{ruleset_id}"))
+        if not isinstance(full, dict):
+            raise ValueError("GitHub ruleset detail is not a JSON object")
+        detailed.append(full)
+    return detailed
+
+
+def _fetch_reviews(repo: str, number: int) -> list[dict[str, object]]:
+    raw = _gh(
+        "api", "--method", "GET", "--paginate", "--slurp",
+        f"repos/{repo}/pulls/{number}/reviews",
+        "-f", "per_page=100",
+    )
+    pages = json.loads(raw)
+    if not isinstance(pages, list):
+        raise ValueError("GitHub review listing is invalid")
+    reviews: list[dict[str, object]] = []
+    for page in pages:
+        if not isinstance(page, list):
+            raise ValueError("GitHub review page is invalid")
+        for item in page:
+            if not isinstance(item, dict):
+                raise ValueError("GitHub review entry is invalid")
+            reviews.append(item)
+    return reviews
+
+
+def _validate_tnd_candidate_policy(
+    repo: str, pr: PRView, *, actor: str | None = None,
+) -> bool:
+    """Validate proof-PR or maintainer-PR contract before merging."""
+    if pr.files_truncated:
+        raise PRError("TND merge candidate has a truncated changed-file list")
+    is_maintainer_pr = has_maintainer_marker(pr.body)
+    if is_maintainer_pr:
+        try:
+            validate_maintainer_pr_contract(
+                repo=repo,
+                head_repo=pr.head_repo,
+                base_branch=pr.base_branch,
+                author=pr.author,
+                body=pr.body,
+                linked_issues=pr.linked_issues,
+                files=pr.files,
+            )
+        except ValueError as exc:
+            raise PRError(f"TND maintainer PR refused: {exc}") from exc
+        if not _has_green_maintainer_regression(pr):
+            raise PRError(
+                "TND maintainer PR requires a passing maintainer-regression check"
+            )
+    else:
+        refused = rejected_paths(pr.files)
+        if refused:
+            raise PRError(f"TND proof submission changes protected paths: {refused!r}")
+        if pr.base_branch != "main":
+            raise PRError("TND proof submissions must target main")
+        if len(pr.linked_issues) != 1:
+            raise PRError(
+                "TND proof submissions must close exactly one approved Choir task"
+            )
+    if is_maintainer_pr or actor is not None:
+        try:
+            reviews = _fetch_reviews(repo, pr.number)
+            require_review_authorization(
+                pr_author=pr.author,
+                actor=actor,
+                reviews=reviews,
+                head_sha=pr.head_sha,
+                is_maintainer_pr=is_maintainer_pr,
+                files=pr.files,
+                repo=repo,
+            )
+        except (ValueError, KeyError, TypeError) as exc:
+            raise PRError(f"TND review governance refused merge: {exc}") from exc
+    return is_maintainer_pr
+
+
+def _require_tnd_merge_state(
+    repo: str, pr: PRView, *, app_id: int | None = None,
+) -> None:
     """Re-read the maintained protection and complete audit-run listing.
 
     This is deliberately a small, reusable preflight rather than an atomicity
@@ -351,6 +463,8 @@ def _require_tnd_merge_state(repo: str, pr: PRView) -> None:
     try:
         protection = json.loads(_gh("api", f"repos/{repo}/branches/main/protection"))
         require_merge_protection(protection)
+        if app_id is not None:
+            require_app_only_merge_ruleset(_fetch_detailed_rulesets(repo), app_id=app_id)
     except (ValueError, KeyError, TypeError) as exc:
         raise PRError(f"TND merge protection refused merge: {exc}") from exc
     raw_runs = _gh(
@@ -374,6 +488,8 @@ def _same_tnd_candidate(before: PRView, after: PRView) -> bool:
         and after.head_sha == before.head_sha
         and after.base_sha == before.base_sha
         and after.base_branch == before.base_branch
+        and after.author == before.author
+        and after.head_repo == before.head_repo
         and after.body == before.body
         and after.linked_issues == before.linked_issues
         and not after.files_truncated
@@ -382,7 +498,14 @@ def _same_tnd_candidate(before: PRView, after: PRView) -> bool:
 
 
 def _require_stable_final_tnd_state(
-    repo: str, number: int, before: PRView, *, prover: str | None, force: str | None,
+    repo: str,
+    number: int,
+    before: PRView,
+    *,
+    prover: str | None,
+    force: str | None,
+    actor: str | None = None,
+    app_id: int | None = None,
 ) -> PRView:
     """Repeat every non-overridable TND check immediately before merging."""
     final_pr = get_pr(repo, number)
@@ -391,7 +514,8 @@ def _require_stable_final_tnd_state(
             f"TND merge candidate changed during preflight: expected open PR "
             f"head {before.head_sha} on base {before.base_sha}; refusing to merge"
         )
-    _require_tnd_merge_state(repo, final_pr)
+    _validate_tnd_candidate_policy(repo, final_pr, actor=actor)
+    _require_tnd_merge_state(repo, final_pr, app_id=app_id)
     if force is not None:
         return final_pr
     final_missing = missing_required_checks(final_pr)
@@ -419,6 +543,8 @@ def merge_pr(
     force: str | None = None,
     prover: str | None = None,
     expected_head_sha: str | None = None,
+    actor: str | None = None,
+    app_id: int | None = None,
 ) -> None:
     """Merge the PR, refusing unless every required check is present and green.
 
@@ -496,16 +622,8 @@ def merge_pr(
     # TND: source-only admission and trusted verification bind even an explicit
     # override of Choir's ordinary checks. Run this project's patched CLI, not
     # a separately installed upstream Choir checkout.
-    refused = rejected_paths(pr.files)
-    if refused or pr.files_truncated:
-        raise PRError(f"TND proof submission changes protected paths: {refused!r}")
-    if pr.base_branch != "main":
-        raise PRError("TND proof submissions must target main")
-    if len(pr.linked_issues) != 1:
-        raise PRError(
-            "TND proof submissions must close exactly one approved Choir task"
-        )
-    _require_tnd_merge_state(repo, pr)
+    _validate_tnd_candidate_policy(repo, pr, actor=actor)
+    _require_tnd_merge_state(repo, pr, app_id=app_id)
 
     if force is None:
         if not pr.checks:
@@ -577,7 +695,7 @@ def merge_pr(
     # final listing.  Production must use the serialized merge lane described
     # in .choir/TND-INTEGRATION.md and prove it on GitHub before certification.
     _require_stable_final_tnd_state(
-        repo, number, pr, prover=prover, force=force,
+        repo, number, pr, prover=prover, force=force, actor=actor, app_id=app_id,
     )
 
     args = ["pr", "merge", str(number), "--repo", repo, f"--{method}"]
