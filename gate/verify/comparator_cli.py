@@ -133,11 +133,11 @@ from gate.verify.comparator import (
     comparator_config_json,
     declared_names,
     imported_modules,
-    lean_lib_names,
     module_of_path,
     permitted_axioms,
     private_names_in_statement,
     rewrite_imports,
+    root_lib_names,
     solution_root,
     suffix_divergent_instances,
     toolchain_supported,
@@ -148,7 +148,7 @@ from gate.verify.pr_files import PrFilesError, fetch_pr_files
 from gate.verify.prover_dispatch import filter_files_by_profile, resolve_prover_profile
 from orchestrator.governance import GovernanceError, load_governance
 
-_EXCLUDED_PREFIXES = (".lake/", ".choir/", ".github/", "skills/")
+_EXCLUDED_PREFIXES = (".lake/", ".choir/", ".github/", "skills/", "pilot/")
 _RESERVED_HEAD_FILES = frozenset(
     {"Challenge.lean", "Solution.lean", f"{CHALLENGE_PREFIX}.lean"}
 )
@@ -244,7 +244,7 @@ def materialize_workspace(
             _git("show", f"{base_sha}:lake-manifest.json"),
         )
 
-    root_libs = lean_lib_names(base_lakefile)
+    root_libs = root_lib_names(base_lakefile)
     _write(dest / "Challenge.lean", challenge_root(root_libs, target_module))
     _write(dest / "Solution.lean", solution_root(root_libs, target_module))
     _write(dest / f"{CHALLENGE_PREFIX}.lean", choirbase_root(root_libs))

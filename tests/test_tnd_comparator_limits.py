@@ -441,6 +441,9 @@ def test_task_outside_the_published_library_gets_a_workspace_library():
     assert published.count("TNDLib") == 1
     assert "tasks" not in comparator.lean_lib_names(comparator.workspace_lakefile(base))
     assert "tasks" not in comparator.lean_lib_names(base)
+    real_lakefile = (Path(__file__).resolve().parents[1] / "lakefile.toml").read_text()
+    assert comparator.root_lib_names(real_lakefile) == ["TNDLib"]
+    assert "TNDMatchingPilot" in comparator.lean_lib_names(real_lakefile)
     for reserved in ("Solution.x", "Challenge", "ChoirBase.tasks.map_exists"):
         with pytest.raises(comparator.ComparatorConfigError):
             comparator.workspace_lakefile(base, reserved)

@@ -159,7 +159,9 @@ def exercise_git(args, workspace: Path, lean_root: Path, checker: Path, exporter
         cleanup=driver.ensure_container_removed,
     )
     proof = checked["proof_check"]
-    expected_decls = len(json.loads((PROJECT / "audit/exports.json").read_text())["declarations"])
+    expected_decls = len(
+        json.loads((PROJECT / "audit/exports.json").read_text())["expected_exports"]
+    )
     if (
         proof.get("status") != "verified-proof-objects"
         or proof.get("toolchain") != "4.35.0"

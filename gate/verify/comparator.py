@@ -377,6 +377,22 @@ def lean_lib_names(lakefile_text: str) -> list[str]:
     return [lib["name"] for lib in libs if isinstance(lib, dict) and "name" in lib]
 
 
+def root_lib_names(lakefile_text: str) -> list[str]:
+    """Root `[[lean_lib]]` names to import in `Challenge`/`Solution`/`ChoirBase`.
+
+    When `defaultTargets` is declared in `lakefile.toml`, only libraries in
+    `defaultTargets` are part of the published root surface (excluding explicit
+    development targets such as `TNDMatchingPilot`).
+    """
+    all_libs = lean_lib_names(lakefile_text)
+    data = tomllib.loads(lakefile_text)
+    defaults = data.get("defaultTargets")
+    if isinstance(defaults, list) and defaults:
+        default_set = {t for t in defaults if isinstance(t, str)}
+        return [name for name in all_libs if name in default_set]
+    return all_libs
+
+
 def workspace_lakefile(base_lakefile_text: str, target_module: str | None = None) -> str:
     """Base lakefile text + the generated `[[lean_lib]]` blocks.
 
