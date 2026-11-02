@@ -113,12 +113,32 @@ variable `TND_MERGE_LANE_ENABLED` is `true`. It takes no override input and bind
 the request to an exact head. No automated test has observed GitHub's scheduling;
 the local merge command remains the only exercised path.
 
-It requires a `tnd-merge` environment holding a `TND_MERGE_TOKEN` secret. The
-default `GITHUB_TOKEN` is not usable: GitHub creates no downstream runs from its
-events, so merging with it would silently skip `issue-close-on-merge` and
-`audit-main`, and it cannot read branch protection. The token must obey the
-same strict administrator-enforced rules as everyone else. Its exact identity
-is a reviewed decision that has not been made.
+It requires a `tnd-merge` environment holding `TND_MERGE_APP_ID` and
+`TND_MERGE_APP_PRIVATE_KEY` secrets for the dedicated GitHub App merge identity.
+The default `GITHUB_TOKEN` is not usable: GitHub creates no downstream runs from
+its events, so merging with it would silently skip `issue-close-on-merge` and
+`audit-main`, and it cannot read branch protection. `orchestrator/merge_lane.py`
+mints a short-lived repository-scoped installation token in memory via
+`orchestrator/github_app.py` and verifies both classic branch protection
+(`strict: true`, `enforce_admins: true`, all eight required status checks) and
+an active `main` branch ruleset whose `update` rule permits only that GitHub App
+(`Integration`, `bypass_mode: "always"`) as a bypass actor. This closes the
+direct-merge gap on a personal repository: human collaborators and the owner
+cannot push or merge directly to `main` outside `tnd-merge.yml`, while the
+GitHub App remains bound by classic branch protection.
+
+Repository roles (`superadmin`, near-equal `admins`, and proof `reviewers`) are
+tracked in `.choir/governance.json` and enforced by `orchestrator/governance.py`
+from the trusted `main` tree. Same-repository maintainer PRs (`tnd-pr-mode:
+maintainer` in the PR body, authored by a configured maintainer in base
+`.choir/governance.json`, zero closing task references) are supported across
+`gate/verify/tnd_fetch.py`, `audit/run.py`, `gate/verify/tnd_comparator.py`,
+`gate/verify/sorry_delta_cli.py`, `gate/verify/statement_immutability_cli.py`,
+`gate/state/close_on_merge_cli.py`, and `orchestrator/prs.py`, requiring both
+full-library `tnd-audit` replay of `HEAD` and a passing `regression` check from
+`maintainer-ci.yml`. Edits to `.choir/governance.json` or
+`.choir/certification.json` additionally require `superadmin` (`kmehltretter82`)
+approval on the exact PR head.
 
 On `kmehltretter82/tnd-validation` (not a release) these have been observed live:
 strict administrator-enforced protection with all eight contexts rejected the owner's
@@ -138,8 +158,32 @@ GitHub reports a `pull_request_target` run's `head_sha` as the PR head, while th
 preflight queried the base. With the preflight using the PR head, `tnd-merge` merged PR
 #2 at its exact reviewed head using `TND_MERGE_TOKEN`, and the merge triggered
 `issue-close-on-merge` (task closed as `choir/done`) and `audit-main` (evidence published
-to a release). The variable below was set for that test and has been removed again. The
-lane's race boundaries, cancellation, and queue saturation remain untested.
+to a release). The variable below was set for testing and has been removed again.
+
+Lane behavior observed live on that repository, with real proof PRs:
+
+| Scenario | Result |
+| --- | --- |
+| Audit rerun cancelled, then merge | Refused; GitHub also blocked it, because the cancellation posts a failed `tnd-audit` |
+| New commit pushed as a merge is requested | Refused by exact head; the audit waited for the merge job to finish |
+| Audit rerun, then merge request | Merge waited for the audit, then merged |
+| Merge with a moved base | Refused by GitHub's strict rule; merged after the branch was updated and rechecked |
+| Rerun fired 1 s and 3 s into the merge step | Seen by the preflight; refused as a pending or active attempt |
+| Rerun fired 2 s into the merge step | Missed by the listing; merged, and the audit started only after the merge job ended |
+| Two merges at once | One merged; GitHub refused the other |
+| Queue over 100 pending runs | The six extra merge runs failed; an audit pushed into the full queue failed without running, the PR stayed blocked, a merge was refused, and a rerun recovered it |
+
+A rerun that lands after its PR merged fails at acquisition, because the PR is no longer
+open. It does not affect `main`.
+
+**The lane protects only merges that use it.** During an active audit rerun GitHub reports
+the PR as `UNSTABLE`, so a direct merge by anyone with write access would not be stopped,
+and the earlier green `tnd-audit` still counts. Only the strict branch rule applies there.
+
+Maintainer changes have no merge route. Promotion and any edit outside `TNDLib/` and `tasks/`
+fail the proof gate's path policy, so they cannot satisfy the required checks. On the test
+repository they were pushed by lifting protection briefly, which is not acceptable as a
+routine on the real one.
 
 Before setting the variable, a test repository must show that initial runs and
 all full/partial reruns acquire the same cross-workflow group, that `queue: max`

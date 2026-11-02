@@ -88,10 +88,12 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 from collections.abc import Collection
 from dataclasses import dataclass
+from pathlib import Path
 
 from gate.provers import ProverError
 from gate.state.close_on_merge import parse_closing_refs
@@ -109,6 +111,7 @@ from gate.verify.sorry_delta import (
     compare_reduction,
     format_finding,
 )
+from gate.verify.tnd_fetch import is_verified_maintainer_checkout
 
 # Re-exported under the audit-conventional name (mirrors
 # axiom_honesty_cli); reads from the base SHA by contract.
@@ -334,6 +337,50 @@ def _print_refusal(reduction: _Reduction | None, policy: SorryPolicy) -> None:
         )
 
 
+def _maintainer_task_paths(base_sha: str, head_sha: str) -> set[str]:
+    if not is_verified_maintainer_checkout(Path("."), base_sha, head_sha):
+        return set()
+    raw_tasks = _show(head_sha, "audit/tasks.json")
+    if not raw_tasks:
+        return set()
+    try:
+        parsed_tasks = json.loads(raw_tasks)
+    except json.JSONDecodeError:
+        return set()
+    if not isinstance(parsed_tasks, dict) or not isinstance(parsed_tasks.get("tasks"), list):
+        return set()
+    return {
+        item["source_path"]
+        for item in parsed_tasks["tasks"]
+        if isinstance(item, dict) and isinstance(item.get("source_path"), str)
+    }
+
+
+def _print_header(
+    *,
+    prover_name: str,
+    base_sha: str,
+    head_sha: str,
+    policy: SorryPolicy,
+    reduction: _Reduction | None,
+    reduction_message: str | None,
+    extensions: tuple[str, ...],
+    file_count: int,
+) -> None:
+    print("=== sorry-delta audit ===")
+    print(f"prover: {prover_name}")
+    print(f"base: {base_sha}")
+    print(f"head: {head_sha}")
+    print(f"policy: {policy.value}")
+    print(f"submission: {'reduction' if reduction is not None else 'proof'}")
+    if reduction is not None:
+        print(f"reduction target: {reduction.target_decl} in {reduction.target_file}")
+    if reduction_message is not None:
+        print(f"⚠ {reduction_message}")
+    print(f"changed {'/'.join(extensions)} files: {file_count}")
+    print()
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
 
@@ -371,25 +418,27 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {e}", file=sys.stderr)
         return 2
 
-    print("=== sorry-delta audit ===")
-    print(f"prover: {profile.name}")
-    print(f"base: {base_sha}")
-    print(f"head: {head_sha}")
-    print(f"policy: {policy.value}")
-    print(f"submission: {'reduction' if reduction is not None else 'proof'}")
-    if reduction is not None:
-        print(f"reduction target: {reduction.target_decl} in {reduction.target_file}")
-    if reduction_message is not None:
-        print(f"⚠ {reduction_message}")
-    print(f"changed {'/'.join(profile.file_extensions)} files: {len(files)}")
-    print()
+    _print_header(
+        prover_name=profile.name,
+        base_sha=base_sha,
+        head_sha=head_sha,
+        policy=policy,
+        reduction=reduction,
+        reduction_message=reduction_message,
+        extensions=profile.file_extensions,
+        file_count=len(files),
+    )
 
     if not files:
         print("No matching source files changed; audit not applicable.")
         return 0
 
+    maintainer_tasks = _maintainer_task_paths(base_sha, head_sha)
     any_introduced = False
     for path in files:
+        if path in maintainer_tasks:
+            print(f"✓ {path}: maintainer task challenge (verified by tnd-audit)")
+            continue
         base = _show(base_sha, path)
         head = _show(head_sha, path)
         reduced = reduction is not None and path == reduction.target_file

@@ -46,6 +46,9 @@ PUBLISHED_PACKAGE = {
     "lakefile.toml": (
         b'name = "tndlib"\nversion = "0.1.0"\ndefaultTargets = ["TNDLib"]\n'
         b'\n[[lean_lib]]\nname = "TNDLib"\n'
+        b'\n# Explicit development target; not part of the approved TNDLib source inventory.\n'
+        b'[[lean_lib]]\nname = "TNDMatchingPilot"\nsrcDir = "pilot"\n'
+        b'roots = ["TNDLib.Matching"]\nglobs = ["TNDLib.Matching.+"]\n'
     ),
     "lake-manifest.json": (
         b'{"version": "1.3.0",\n "packagesDir": ".lake/packages",\n'
@@ -229,9 +232,15 @@ def pinned_lean_root() -> Path:
     return root
 
 
-def _approved_source_entries(repo: Path, revision: str) -> dict[str, bytes]:
+def _approved_source_entries(
+    repo: Path, revision: str, *, policy_data: dict | None = None
+) -> dict[str, bytes]:
     """Validate the fixed library inventory before copying any candidate blob."""
-    policy, _ = admission.policy_for()
+    policy, _ = (
+        admission.policy_for()
+        if policy_data is None
+        else admission.policy_for(policy_data=policy_data)
+    )
     approved = {entry["path"] for entry in policy["source_files"]}
     records = [
         record
@@ -264,7 +273,9 @@ def _approved_source_entries(repo: Path, revision: str) -> dict[str, bytes]:
     return entries
 
 
-def source_snapshot(repo: Path, revision: str, destination: Path) -> dict[str, str]:
+def source_snapshot(
+    repo: Path, revision: str, destination: Path, *, policy_data: dict | None = None
+) -> dict[str, str]:
     """Copy only ordinary tracked Lean source files, never links or build products."""
     if not SHA.fullmatch(revision):
         raise ValueError("base and head must be full commit hashes")
@@ -294,10 +305,15 @@ def source_snapshot(repo: Path, revision: str, destination: Path) -> dict[str, s
             continue
         name = record.decode("utf-8")
         if name.endswith(".lean") and not (
-            name == "TNDLib.lean" or name.startswith(("TNDLib/", "tasks/", "tests/", "audit/"))
+            name == "TNDLib.lean"
+            or name.startswith(("TNDLib/", "tasks/", "tests/", "audit/", "pilot/TNDLib/Matching/"))
         ):
             raise ValueError(f"unapproved Lean source outside library and auxiliary trees: {name}")
-    entries = _approved_source_entries(repo, revision)
+    entries = (
+        _approved_source_entries(repo, revision)
+        if policy_data is None
+        else _approved_source_entries(repo, revision, policy_data=policy_data)
+    )
     files: dict[str, str] = {}
     total = 0
     for name, oid in sorted(entries.items()):
@@ -620,11 +636,18 @@ def admitted_snapshot(
     task: dict | None = None,
     role: str = "solution",
     image: str = IMAGE,
+    *,
+    policy_data: dict | None = None,
+    policy_bytes: bytes | None = None,
 ) -> tuple[Path, dict, dict]:
     """Copy Git blobs, admit those exact bytes, and build only the admitted copy."""
     raw = scratch / "raw-source"
     raw.mkdir(parents=True)
-    git_hashes = source_snapshot(repo, revision, raw)
+    git_hashes = (
+        source_snapshot(repo, revision, raw)
+        if policy_data is None
+        else source_snapshot(repo, revision, raw, policy_data=policy_data)
+    )
     admitted_hashes = dict(git_hashes)
     if task is not None:
         path = task["source_path"]
@@ -642,6 +665,11 @@ def admitted_snapshot(
         git_hashes[path] = hashlib.sha256(content).hexdigest()
         admitted_hashes["Task.lean"] = git_hashes[path]
     source = scratch / "source"
+    extra = {}
+    if policy_data is not None:
+        extra["policy_data"] = policy_data
+    if policy_bytes is not None:
+        extra["policy_bytes"] = policy_bytes
     report = parser_sandbox.admit_into_container(
         raw,
         source,
@@ -652,6 +680,7 @@ def admitted_snapshot(
         expected_hashes=admitted_hashes,
         task_id=task["id"] if task else None,
         role=role,
+        **extra,
     )
     if task is not None and report.get("task", {}).get("source_path") != task["source_path"]:
         raise ValueError("task registry and admission policy source paths differ")
@@ -673,6 +702,180 @@ def admitted_snapshot(
     )
     (source / ".lake").mkdir()
     return source, git_hashes, report
+
+
+def _git_blob(repo: Path, revision: str, path: str) -> bytes:
+    """Read a regular UTF-8 JSON/source blob from a specific commit tree."""
+    record = git(repo, "ls-tree", "-z", revision, "--", path)
+    entries = [entry for entry in record.split(b"\0") if entry]
+    if len(entries) != 1:
+        raise ValueError(f"missing required policy file in {revision}: {path}")
+    metadata, raw_name = entries[0].split(b"\t", 1)
+    mode, kind, oid = metadata.split()
+    if raw_name.decode("utf-8") != path or mode != b"100644" or kind != b"blob":
+        raise ValueError(f"policy file must be an ordinary regular blob: {path}")
+    content = git(repo, "cat-file", "blob", oid.decode())
+    if not 0 < len(content) <= admission.MAX_FILE or b"\0" in content:
+        raise ValueError(f"policy file exceeds size limit or contains NUL bytes: {path}")
+    content.decode("utf-8", errors="strict")
+    return content
+
+
+def _is_maintainer_pr(repo: Path, base: str, head: str) -> bool:
+    """Return True when tnd_fetch verified an authenticated maintainer PR checkout."""
+    if base == head:
+        return False
+    marker = repo / ".git" / "tnd-maintainer-pr.json"
+    if marker.is_symlink():
+        raise ValueError("maintainer PR marker must not be a symlink")
+    if not marker.is_file():
+        return False
+    payload = json.loads(marker.read_text(encoding="utf-8"))
+    if (
+        not isinstance(payload, dict)
+        or payload.get("mode") != "maintainer"
+        or payload.get("base_sha") != base
+        or payload.get("head_sha") != head
+        or not isinstance(payload.get("pr"), int)
+        or isinstance(payload.get("pr"), bool)
+        or payload.get("pr") <= 0
+    ):
+        raise ValueError("invalid maintainer PR marker state")
+    return True
+
+
+def _load_validated_maintainer_manifests(
+    repo: Path, revision: str
+) -> tuple[dict, bytes, dict, bytes, dict]:
+    """Load and validate HEAD's admission policy, export inventory, and task registry."""
+    policy_bytes = _git_blob(repo, revision, "audit/admission/policy.json")
+    exports_bytes = _git_blob(repo, revision, "audit/exports.json")
+    tasks_bytes = _git_blob(repo, revision, "audit/tasks.json")
+    policy = json.loads(policy_bytes.decode("utf-8"))
+    inventory = json.loads(exports_bytes.decode("utf-8"))
+    registry = json.loads(tasks_bytes.decode("utf-8"))
+    source_config, _ = admission.policy_for(policy_data=policy)
+    approved_paths = {entry["path"] for entry in source_config["source_files"]}
+    if not isinstance(inventory, dict):
+        raise ValueError("invalid export inventory")
+    expected = inventory.get("expected_exports")
+    displayed = inventory.get("display_exports")
+    source_paths = inventory.get("source_paths")
+    if (
+        not isinstance(expected, list)
+        or not expected
+        or any(not isinstance(item, str) or not item for item in expected)
+        or expected != sorted(set(expected))
+    ):
+        raise ValueError("expected_exports must be a nonempty sorted unique list")
+    if (
+        not isinstance(displayed, list)
+        or any(not isinstance(item, str) or not item for item in displayed)
+        or displayed != sorted(set(displayed))
+        or not set(displayed).issubset(expected)
+    ):
+        raise ValueError("display_exports must be a sorted unique subset of expected_exports")
+    if (
+        not isinstance(source_paths, dict)
+        or set(source_paths) != set(expected)
+        or any(path not in approved_paths for path in source_paths.values())
+    ):
+        raise ValueError("export source_paths must map every export to an approved library source")
+    for field in ("descriptions", "contributors", "citations"):
+        mapping = inventory.get(field)
+        if (
+            not isinstance(mapping, dict)
+            or set(mapping) != set(displayed)
+            or any(not isinstance(value, str) or not value.strip() for value in mapping.values())
+        ):
+            raise ValueError(f"export {field} must cover display_exports with non-blank strings")
+    if not isinstance(registry, dict) or not isinstance(registry.get("tasks"), list):
+        raise ValueError("invalid task registry")
+    tasks = registry["tasks"]
+    ids = set()
+    paths = set()
+    for task in tasks:
+        if not isinstance(task, dict):
+            raise ValueError("invalid task registry entry")
+        task_id = task.get("id")
+        task_path = task.get("source_path")
+        if not isinstance(task_id, str) or not re.fullmatch(r"[A-Za-z0-9_]+", task_id):
+            raise ValueError("invalid task id in registry")
+        if not isinstance(task_path, str) or not re.fullmatch(
+            r"tasks/[A-Za-z0-9_]+\.lean", task_path
+        ):
+            raise ValueError("invalid task source_path in registry")
+        if task_id in ids or task_path in paths:
+            raise ValueError("duplicate task id or source_path in registry")
+        ids.add(task_id)
+        paths.add(task_path)
+        _, policy_task = admission.policy_for(task_id, "challenge", policy_data=policy)
+        if policy_task is None or policy_task.get("source_path") != task_path:
+            raise ValueError("task registry and admission policy source paths differ")
+    return policy, policy_bytes, inventory, exports_bytes, registry
+
+
+def verify_maintainer_tasks(
+    args: argparse.Namespace,
+    repo: Path,
+    registry: dict,
+    policy_data: dict,
+    policy_bytes: bytes,
+    workspace: Path,
+    lean_root: Path,
+    exporter: Path,
+    export_stage: Callable[..., Path],
+) -> list[dict]:
+    """Verify any added or updated task challenges on a maintainer PR."""
+    tasks = registry["tasks"]
+    by_path = {entry["source_path"]: entry for entry in tasks}
+    changed = [
+        name.decode("utf-8")
+        for name in git(
+            repo,
+            "diff",
+            "--name-only",
+            "--diff-filter=ACMR",
+            "-z",
+            args.base,
+            args.head,
+            "--",
+            "tasks",
+        ).split(b"\0")
+        if name
+    ]
+    reports = []
+    for path in changed:
+        task = by_path.get(path)
+        if task is None or not re.fullmatch(r"tasks/[A-Za-z0-9_]+\.lean", path):
+            raise ValueError(f"task challenge file is absent from tasks.json: {path}")
+        scratch = workspace / ("maintainer-task-" + task["id"] + "-head")
+        source, snapshot_hashes, task_admission = admitted_snapshot(
+            repo,
+            args.head,
+            scratch,
+            lean_root,
+            task,
+            "challenge",
+            args.image,
+            policy_data=policy_data,
+            policy_bytes=policy_bytes,
+        )
+        export_file = export_stage(
+            args.image, source, scratch, lean_root, exporter, "Task", task["namespace_name"]
+        )
+        admission.verify_exact(source, task_admission["source_sha256"])
+        reports.append(
+            {
+                "id": task["id"],
+                "source_path": path,
+                "status": "verified-task-challenge",
+                "source_files": {"head": snapshot_hashes},
+                "admission": {"head": task_admission},
+                "export_sha256": {"head": digest(export_file)},
+            }
+        )
+    return reports
 
 
 def verify_tasks(
@@ -751,6 +954,52 @@ def verify_tasks(
     return reports
 
 
+def _verify_maintainer_workspace(
+    args: argparse.Namespace,
+    repo: Path,
+    workspace: Path,
+    lean_root: Path,
+    exporter: Path,
+    checker: Path,
+    export_stage: Callable[..., Path],
+) -> tuple[dict, dict, dict, dict, list[dict], str]:
+    head_policy, head_policy_bytes, head_inventory, head_exports_bytes, head_tasks = (
+        _load_validated_maintainer_manifests(repo, args.head)
+    )
+    sources, exports, admissions = {}, {}, {}
+    for label, revision in (("base", args.base), ("head", args.head)):
+        extra = (
+            {"policy_data": head_policy, "policy_bytes": head_policy_bytes}
+            if label == "head"
+            else {}
+        )
+        source, sources[label], admissions[label] = admitted_snapshot(
+            repo, revision, workspace / label, lean_root, image=args.image, **extra
+        )
+        exports[label] = export_stage(
+            args.image, source, workspace / label, lean_root, exporter
+        )
+        admission.verify_exact(source, admissions[label]["source_sha256"])
+    head_config = workspace / "head-exports.json"
+    head_config.write_bytes(head_exports_bytes)
+    proof = check_proof(
+        args.image, head_config, exports["head"], exports["head"], checker, lean_root
+    )
+    bind_declarations(proof, head_inventory, sources["head"], args.head)
+    tasks = verify_maintainer_tasks(
+        args,
+        repo,
+        head_tasks,
+        head_policy,
+        head_policy_bytes,
+        workspace,
+        lean_root,
+        exporter,
+        export_stage,
+    )
+    return sources, exports, admissions, proof, tasks, digest(head_config)
+
+
 def verify(args: argparse.Namespace) -> dict:
     if platform.system() != "Linux":
         raise ValueError(
@@ -814,31 +1063,30 @@ def verify(args: argparse.Namespace) -> dict:
 
     with tempfile.TemporaryDirectory(prefix="tnd-audit-") as tmp:
         workspace = Path(tmp)
-        sources = {}
-        exports = {}
-        admissions = {}
-        for label, revision in (("base", args.base), ("head", args.head)):
-            source, sources[label], admissions[label] = admitted_snapshot(
-                repo, revision, workspace / label, lean_root, image=args.image
+        if _is_maintainer_pr(repo, args.base, args.head):
+            sources, exports, admissions, proof, tasks, inventory_sha256 = (
+                _verify_maintainer_workspace(
+                    args, repo, workspace, lean_root, exporter, checker, export_stage
+                )
             )
-            exports[label] = export_stage(
-                args.image, source, workspace / label, lean_root, exporter
+        else:
+            sources, exports, admissions = {}, {}, {}
+            for label, revision in (("base", args.base), ("head", args.head)):
+                source, sources[label], admissions[label] = admitted_snapshot(
+                    repo, revision, workspace / label, lean_root, image=args.image
+                )
+                exports[label] = export_stage(
+                    args.image, source, workspace / label, lean_root, exporter
+                )
+                admission.verify_exact(source, admissions[label]["source_sha256"])
+            proof = check_proof(
+                args.image, config, exports["base"], exports["head"], checker, lean_root
             )
-            admission.verify_exact(source, admissions[label]["source_sha256"])
-        proof = check_proof(
-            args.image, config, exports["base"], exports["head"], checker, lean_root
-        )
-        bind_declarations(proof, inventory, sources["head"], args.head)
-        tasks = verify_tasks(
-            args,
-            repo,
-            audit,
-            workspace,
-            lean_root,
-            exporter,
-            checker,
-            export_stage,
-        )
+            bind_declarations(proof, inventory, sources["head"], args.head)
+            tasks = verify_tasks(
+                args, repo, audit, workspace, lean_root, exporter, checker, export_stage
+            )
+            inventory_sha256 = digest(config)
         evidence = promote_evidence(certification, proof, admissions)
         return {
             "schema_version": 1,
@@ -855,7 +1103,7 @@ def verify(args: argparse.Namespace) -> dict:
             "source_files": sources,
             "admission": admissions,
             "export_sha256": {label: digest(path) for label, path in exports.items()},
-            "inventory_sha256": digest(config),
+            "inventory_sha256": inventory_sha256,
             "checker_sha256": digest(checker),
             "exporter_sha256": digest(exporter),
             "proof_check": proof,

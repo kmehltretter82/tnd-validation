@@ -113,33 +113,81 @@ def _targets_main_branch(ruleset: Mapping[str, Any]) -> bool:
     return bool({"~DEFAULT_BRANCH", "refs/heads/main"} & set(include))
 
 
-def require_app_only_merge_ruleset(rulesets: Any, *, app_id: int) -> None:
-    """Require an active main-branch ruleset restricting updates to the merge App alone."""
+def require_app_only_merge_ruleset(
+    rulesets: Any,
+    *,
+    app_id: int,
+    require_unredacted_actors: bool = False,
+    expected_ruleset_id: int | None = None,
+) -> dict[str, Any]:
+    """Require an active main-branch ruleset restricting updates to the merge App.
+
+    Trust model:
+    1. Owner-side configuration audit (``require_unredacted_actors=True``) runs with
+       repository administration visibility and requires the unredacted
+       ``bypass_actors`` list to contain ``Integration`` ``app_id`` (``always``) as
+       the sole bypass actor.
+    2. Runtime merge preflight runs under the short-lived GitHub App installation
+       token minted by ``orchestrator/merge_lane.py`` with ``Administration: read``
+       (keeping ruleset administration out of the runtime merge credential). When
+       GitHub redacts ``bypass_actors`` on a read-only ruleset read, GitHub still
+       evaluates ``current_user_can_bypass`` for the caller; runtime preflight
+       accepts the ruleset only when it is an active ``main``-branch ``update``
+       ruleset and ``current_user_can_bypass == "always"`` for the authenticated
+       Merge App token.
+    """
     if isinstance(app_id, bool) or not isinstance(app_id, int) or app_id < 1:
         raise ValueError("TND merge App ID must be a positive integer")
+    if expected_ruleset_id is not None and (
+        isinstance(expected_ruleset_id, bool)
+        or not isinstance(expected_ruleset_id, int)
+        or expected_ruleset_id < 1
+    ):
+        raise ValueError("expected TND ruleset ID must be a positive integer")
     if not isinstance(rulesets, list) or not rulesets:
         raise ValueError("TND requires an active main-branch ruleset restricting direct merges")
     for ruleset in rulesets:
         if not isinstance(ruleset, Mapping) or not _targets_main_branch(ruleset):
             continue
+        ruleset_id = ruleset.get("id")
+        if expected_ruleset_id is not None and (
+            isinstance(ruleset_id, bool) or ruleset_id != expected_ruleset_id
+        ):
+            continue
         rules = ruleset.get("rules")
-        bypass = ruleset.get("bypass_actors")
-        if not isinstance(rules, list) or not isinstance(bypass, list):
+        if not isinstance(rules, list):
             continue
         rule_types = {
             rule.get("type") for rule in rules if isinstance(rule, Mapping)
         }
         if "update" not in rule_types:
             continue
-        if len(bypass) == 1 and isinstance(bypass[0], Mapping):
-            actor = bypass[0]
-            if (
-                actor.get("actor_type") == "Integration"
-                and not isinstance(actor.get("actor_id"), bool)
-                and actor.get("actor_id") == app_id
-                and actor.get("bypass_mode") == "always"
-            ):
-                return
+        bypass = ruleset.get("bypass_actors")
+        if isinstance(bypass, list) and bypass:
+            if len(bypass) == 1 and isinstance(bypass[0], Mapping):
+                actor = bypass[0]
+                if (
+                    actor.get("actor_type") == "Integration"
+                    and not isinstance(actor.get("actor_id"), bool)
+                    and actor.get("actor_id") == app_id
+                    and actor.get("bypass_mode") == "always"
+                ):
+                    return {
+                        "ruleset_id": ruleset_id,
+                        "name": ruleset.get("name"),
+                        "verification_mode": "unredacted_bypass_actors",
+                    }
+            continue
+        if (
+            not require_unredacted_actors
+            and (bypass is None or bypass == [])
+            and ruleset.get("current_user_can_bypass") == "always"
+        ):
+            return {
+                "ruleset_id": ruleset_id,
+                "name": ruleset.get("name"),
+                "verification_mode": "app_token_self_bypass",
+            }
     raise ValueError(
         "TND requires an active main-branch update ruleset whose only bypass actor "
         f"is GitHub App {app_id}"

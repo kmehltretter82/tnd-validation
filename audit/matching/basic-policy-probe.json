@@ -1,0 +1,22 @@
+{
+  "source_files": [
+    {
+      "path": "pilot/TNDLib/Matching/Basic.lean",
+      "module_name": "TNDLib.Matching.Basic",
+      "namespace_name": "TNDLib.Matching",
+      "imports": [
+        "TNDLib.Finite"
+      ],
+      "declarations": [
+        "TNDLib.Matching.Preferences",
+        "TNDLib.Matching.PerfectMatching",
+        "TNDLib.Matching.BlockingPair",
+        "TNDLib.Matching.blockingPairDecidable",
+        "TNDLib.Matching.Stable",
+        "TNDLib.Matching.checkStable",
+        "TNDLib.Matching.checkStable_eq_true_iff"
+      ],
+      "universes": []
+    }
+  ]
+}

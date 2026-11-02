@@ -39,6 +39,7 @@ from gate.provers.select import read_prover
 from gate.state.task_record import ProjectRef, TaskRecord, TaskType
 from orchestrator import joining_prompt as _joining_prompt
 from orchestrator import poll as poll_mod
+from orchestrator.config_audit import audit_merge_config
 from orchestrator.graph import GraphSyncError
 from orchestrator.graph import sync_graph as _graph_sync
 from orchestrator.labels import Difficulty, Priority, set_difficulty, set_priority
@@ -125,6 +126,15 @@ def _c_pr_comments(a: argparse.Namespace) -> int:
 
 def _c_pending_approvals(a: argparse.Namespace) -> int:
     return _emit(pending_approvals(a.repo, limit=a.limit))
+
+
+def _c_audit_merge_config(a: argparse.Namespace) -> int:
+    return _emit(
+        audit_merge_config(
+            a.repo,
+            expected_ruleset_id=a.ruleset_id,
+        )
+    )
 
 
 def _c_viz(a: argparse.Namespace) -> int:
@@ -431,6 +441,13 @@ def _build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argumen
 
     s = add("pending-approvals", _c_pending_approvals, "fork runs GitHub is holding")
     s.add_argument("--limit", type=int, default=100)
+
+    s = add(
+        "audit-merge-config",
+        _c_audit_merge_config,
+        "owner-side audit of branch protection and unredacted merge-app rulesets",
+    )
+    s.add_argument("--ruleset-id", type=int, default=None, help="optional expected ruleset ID")
 
     s = add("project-config", _c_project_config,
             "automation level + prover, from a local checkout")

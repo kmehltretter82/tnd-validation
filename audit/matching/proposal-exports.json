@@ -1,0 +1,17 @@
+{
+  "namespace_name": "TNDLib.Matching.Proposal",
+  "expected_exports": [
+    "TNDLib.Matching.Proposal.prefer",
+    "TNDLib.Matching.Proposal.preferSpec",
+    "TNDLib.Matching.Proposal.preferRank_le_current",
+    "TNDLib.Matching.Proposal.preferRank_le_candidate",
+    "TNDLib.Matching.Proposal.offer",
+    "TNDLib.Matching.Proposal.offer_nonempty",
+    "TNDLib.Matching.Proposal.offer_preserves_rank"
+  ],
+  "display_exports": [],
+  "source_paths": {},
+  "descriptions": {},
+  "contributors": {},
+  "citations": {}
+}

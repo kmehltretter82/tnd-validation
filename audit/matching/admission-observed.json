@@ -1,0 +1,172 @@
+{
+  "development_only": true,
+  "pinned_lean": "4.35.0",
+  "production_parser_sha256": "1dbc991eea861a172d7364fcbf50ac90bb16e638db662be0129ece4bc1d7ef99",
+  "basic_uses_explicit_decision": true,
+  "first_production_rejection": {
+    "path": "pilot/TNDLib/Matching/Basic.lean",
+    "reason": "unsupported syntax kind: Lean.Parser.Command.structure"
+  },
+  "sources": [
+    {
+      "path": "pilot/TNDLib/Matching/Algorithm.lean",
+      "source_sha256": "339a66eb6f16c496742a97f2a883b794065e9e9f99b237c560fa9e7ed6c902c3",
+      "new_kinds": [
+        "Lean.Parser.Command.ctor",
+        "Lean.Parser.Command.inductive",
+        "Lean.Parser.Command.optDeriving",
+        "Lean.Parser.Command.structFields",
+        "Lean.Parser.Command.structSimpleBinder",
+        "Lean.Parser.Command.structure",
+        "Lean.Parser.Command.structureTk",
+        "termIfThenElse",
+        "term_\u2260_"
+      ]
+    },
+    {
+      "path": "pilot/TNDLib/Matching/Basic.lean",
+      "source_sha256": "3a6121bdb221337536a8888d8706d3b53ea5394b4513347d33bc3f8181081772",
+      "new_kinds": [
+        "Lean.Parser.Command.optDeriving",
+        "Lean.Parser.Command.structFields",
+        "Lean.Parser.Command.structSimpleBinder",
+        "Lean.Parser.Command.structure",
+        "Lean.Parser.Command.structureTk",
+        "Lean.Parser.Term.explicit",
+        "Lean.Parser.Term.inferInstanceAs",
+        "term_\u2260_"
+      ]
+    },
+    {
+      "path": "pilot/TNDLib/Matching/Cardinality.lean",
+      "source_sha256": "23d8d37546eab75640258db09a2da5eeac847446e9ee804ef883a9182dd234d3",
+      "new_kinds": [
+        "Lean.Parser.Term.let",
+        "Lean.Parser.Term.letConfig",
+        "Lean.Parser.Term.letDecl",
+        "Lean.Parser.Term.letId",
+        "Lean.Parser.Term.letIdDecl",
+        "Lean.Parser.Term.namedArgument",
+        "termDepIfThenElse",
+        "term_\u2260_"
+      ]
+    },
+    {
+      "path": "pilot/TNDLib/Matching/Completion.lean",
+      "source_sha256": "c6453a29416e45e2bae89fd87797b61d26b4feb6a632c2782bb8b428a1b95dbe",
+      "new_kinds": [
+        "Lean.Parser.Term.namedArgument"
+      ]
+    },
+    {
+      "path": "pilot/TNDLib/Matching/History.lean",
+      "source_sha256": "3eb868205273662a2c3e507a7fd14db615eaa43f55943f7fe751f523c61e761b",
+      "new_kinds": [
+        "Lean.Parser.Term.let",
+        "Lean.Parser.Term.letConfig",
+        "Lean.Parser.Term.letDecl",
+        "Lean.Parser.Term.letId",
+        "Lean.Parser.Term.letIdDecl",
+        "Lean.Parser.Term.subst",
+        "termDepIfThenElse",
+        "term_\u2260_"
+      ]
+    },
+    {
+      "path": "pilot/TNDLib/Matching/Invariants.lean",
+      "source_sha256": "aff314f7885d7d6c42a5a9918d45d5648fb1af00ab49329b746224334e3da23a",
+      "new_kinds": [
+        "Lean.Parser.Term.subst",
+        "termDepIfThenElse",
+        "term_\u2260_"
+      ]
+    },
+    {
+      "path": "pilot/TNDLib/Matching/Measure.lean",
+      "source_sha256": "eacdb490b3a8300f091d9c3863a8f83f2847382dd8f09bdb3c5eed631b9c0250",
+      "new_kinds": [
+        "Lean.Parser.Term.subst",
+        "Lean.Parser.Term.typeAscription",
+        "Lean.calc",
+        "Lean.calcFirstStep",
+        "Lean.calcStep",
+        "Lean.calcSteps",
+        "termDepIfThenElse",
+        "termIfThenElse",
+        "term_\u2209_"
+      ]
+    },
+    {
+      "path": "pilot/TNDLib/Matching/Pilot.lean",
+      "source_sha256": "4c232d7a455a5f937a426abfbf95ef63a2fbc77295d33662d785c1c6d458084d",
+      "new_kinds": []
+    },
+    {
+      "path": "pilot/TNDLib/Matching/Progress.lean",
+      "source_sha256": "04e8845614c1813a30cb680427f690b397fc6b6bedc0949f8f442ebe04437c69",
+      "new_kinds": [
+        "Lean.Parser.Term.namedArgument",
+        "term_\u2260_"
+      ]
+    },
+    {
+      "path": "pilot/TNDLib/Matching/Proposal.lean",
+      "source_sha256": "ffd506957bcbc8600125e5dcc4131722faed4c0dc2f9ef86c07f7e49e820e09f",
+      "new_kinds": []
+    },
+    {
+      "path": "pilot/TNDLib/Matching/Rank.lean",
+      "source_sha256": "dd0e2371ef189fdb7a2fe6de2c8ba0a6cf7a55cc24e9503744e33be209c16c41",
+      "new_kinds": [
+        "Lean.Parser.Term.explicit",
+        "Lean.Parser.Term.fromTerm",
+        "Lean.Parser.Term.let",
+        "Lean.Parser.Term.letConfig",
+        "Lean.Parser.Term.letDecl",
+        "Lean.Parser.Term.letId",
+        "Lean.Parser.Term.letIdDecl",
+        "Lean.Parser.Term.namedArgument",
+        "Lean.Parser.Term.show",
+        "Lean.Parser.Term.subst",
+        "Lean.Parser.Term.typeAscription",
+        "Lean.calc",
+        "Lean.calcFirstStep",
+        "Lean.calcStep",
+        "Lean.calcSteps",
+        "termDepIfThenElse",
+        "term_\u2209_",
+        "term_\u2260_",
+        "term_\u2286_"
+      ]
+    },
+    {
+      "path": "pilot/TNDLib/Matching/StableMatch.lean",
+      "source_sha256": "115662e64cd4977552b3c1dbdef4025582bb487d8df6570833d9f1d29f11a032",
+      "new_kinds": [
+        "Lean.Parser.Term.let",
+        "Lean.Parser.Term.letConfig",
+        "Lean.Parser.Term.letDecl",
+        "Lean.Parser.Term.letId",
+        "Lean.Parser.Term.letIdDecl"
+      ]
+    },
+    {
+      "path": "pilot/TNDLib/Matching/Termination.lean",
+      "source_sha256": "cda973b6f11eb53af8f9b147569c6968c7849df6c01029f04ffe34fe6077aafe",
+      "new_kinds": [
+        "Lean.Parser.Command.optDeriving",
+        "Lean.Parser.Command.structFields",
+        "Lean.Parser.Command.structSimpleBinder",
+        "Lean.Parser.Command.structure",
+        "Lean.Parser.Command.structureTk",
+        "Lean.Parser.Term.let",
+        "Lean.Parser.Term.letConfig",
+        "Lean.Parser.Term.letDecl",
+        "Lean.Parser.Term.letId",
+        "Lean.Parser.Term.letIdDecl",
+        "termIfThenElse",
+        "term_\u2260_"
+      ]
+    }
+  ]
+}

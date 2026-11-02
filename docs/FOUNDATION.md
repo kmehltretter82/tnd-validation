@@ -2,6 +2,12 @@
 
 This document records local evidence and remaining work. It does not constitute a release or certification.
 
+The [2026-11-01 baseline report](BASELINE.md) records the exact frozen source
+commits, fresh-checkout results, a corrected stale test assertion, and current
+production/test policy separation. The historical measurements below remain
+scoped to the environments in which they were made; later validation-repository
+success does not activate production certification.
+
 ## Chosen starting point
 
 The library uses upstream Lean `leanprover/lean4:v4.35.0` and imports only Lean's bundled `Init` modules. The generated Lake manifest contains no external packages; Mathlib is neither a direct nor a transitive dependency. The platform and Choir tooling are not mathematical imports required by downstream users.

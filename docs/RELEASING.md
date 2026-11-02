@@ -100,3 +100,24 @@ rev = "FULL_40_CHARACTER_RELEASE_COMMIT"
 Record who approved the logical policy, resource manifest, evidence profile,
 and publication. Automatic tagging or deployment is out of scope until the
 manual procedure has succeeded end to end.
+
+## Current production-development profile guard
+
+Before preparing or copying a production snapshot, check its exact commit
+using maintained tooling:
+
+```sh
+python3 -m gate.verify.production_profile --repo . --revision FULL_40_CHARACTER_CANDIDATE_SHA
+```
+
+The current approved production profile is explicitly **uncertified**: both
+validation flags are false and limits are null. The guard rejects test-repository
+flags and budgets, malformed profiles, and ambiguous field types. Checking an
+exact Git blob prevents an uncommitted safe-looking policy from hiding a
+different candidate policy. Running without `--revision` checks working-tree
+bytes only and is useful during development, but does not bind a candidate.
+
+A pass preserves the development boundary; it does not authorize a release.
+The future explicit certification decision must review and update this guard,
+the policy, evidence, and publication plan together. Do not bypass the guard by
+copying the validation repository's activated flags into production.

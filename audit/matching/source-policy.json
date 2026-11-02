@@ -1,0 +1,391 @@
+{
+  "profile": "matching-plain-term-v1",
+  "source_files": [
+    {
+      "data_declarations": [],
+      "declarations": [
+        "TNDLib.Finite.enumerate",
+        "TNDLib.Finite.memEnumerate",
+        "TNDLib.Finite.lengthEnumerate",
+        "TNDLib.Finite.select",
+        "TNDLib.Finite.memSelect"
+      ],
+      "imports": [
+        "Init"
+      ],
+      "module_name": "TNDLib.Finite",
+      "namespaces": [
+        "TNDLib.Finite"
+      ],
+      "path": "TNDLib/Finite.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [
+        {
+          "constructors": [],
+          "fields": [
+            "holding",
+            "nextRank"
+          ],
+          "kind": "structure",
+          "name": "TNDLib.Matching.Algorithm.State",
+          "shape": "N\"Lean.Parser.Command.structure\"[N\"Lean.Parser.Command.structureTk\"[A\"structure\"],N\"Lean.Parser.Command.declId\"[I\"State\",N\"null\"[]],N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[N\"Lean.Parser.Term.explicitBinder\"[A\"(\",N\"null\"[I\"n\"],N\"null\"[A\":\",I\"Nat\"],N\"null\"[],A\")\"]],N\"null\"[]],N\"null\"[],N\"null\"[A\"where\",N\"null\"[],N\"Lean.Parser.Command.structFields\"[N\"null\"[N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"holding\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"Option\",N\"null\"[N\"Lean.Parser.Term.paren\"[N\"Lean.Parser.Term.hygienicLParen\"[A\"(\",N\"hygieneInfo\"[I\"[anonymous]\"]],N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\")\"]]]]]]],N\"null\"[]],N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"nextRank\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",I\"Nat\"]]]],N\"null\"[]]]]],N\"Lean.Parser.Command.optDeriving\"[N\"null\"[]]]"
+        },
+        {
+          "constructors": [
+            "advanced",
+            "finished",
+            "invalid",
+            "exhausted"
+          ],
+          "fields": [],
+          "kind": "inductive",
+          "name": "TNDLib.Matching.Algorithm.StepResult",
+          "shape": "N\"Lean.Parser.Command.inductive\"[A\"inductive\",N\"Lean.Parser.Command.declId\"[I\"StepResult\",N\"null\"[]],N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[N\"Lean.Parser.Term.explicitBinder\"[A\"(\",N\"null\"[I\"n\"],N\"null\"[A\":\",I\"Nat\"],N\"null\"[],A\")\"]],N\"null\"[]],N\"null\"[A\"where\"],N\"null\"[N\"Lean.Parser.Command.ctor\"[N\"null\"[],A\"|\",N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"advanced\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"State\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"StepResult\",N\"null\"[I\"n\"]]]]]]],N\"Lean.Parser.Command.ctor\"[N\"null\"[],A\"|\",N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"finished\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"State\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"StepResult\",N\"null\"[I\"n\"]]]]]]],N\"Lean.Parser.Command.ctor\"[N\"null\"[],A\"|\",N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"invalid\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"State\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"StepResult\",N\"null\"[I\"n\"]]]]]]]],N\"Lean.Parser.Command.ctor\"[N\"null\"[],A\"|\",N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"exhausted\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"State\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"StepResult\",N\"null\"[I\"n\"]]]]]]]]],N\"null\"[],N\"Lean.Parser.Command.optDeriving\"[N\"null\"[]],N\"null\"[]]"
+        },
+        {
+          "constructors": [
+            "finished",
+            "invalid",
+            "exhausted",
+            "fuelExhausted"
+          ],
+          "fields": [],
+          "kind": "inductive",
+          "name": "TNDLib.Matching.Algorithm.Outcome",
+          "shape": "N\"Lean.Parser.Command.inductive\"[A\"inductive\",N\"Lean.Parser.Command.declId\"[I\"Outcome\",N\"null\"[]],N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[N\"Lean.Parser.Term.explicitBinder\"[A\"(\",N\"null\"[I\"n\"],N\"null\"[A\":\",I\"Nat\"],N\"null\"[],A\")\"]],N\"null\"[]],N\"null\"[A\"where\"],N\"null\"[N\"Lean.Parser.Command.ctor\"[N\"null\"[],A\"|\",N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"finished\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"State\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"Outcome\",N\"null\"[I\"n\"]]]]]]],N\"Lean.Parser.Command.ctor\"[N\"null\"[],A\"|\",N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"invalid\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"State\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"Outcome\",N\"null\"[I\"n\"]]]]]]]],N\"Lean.Parser.Command.ctor\"[N\"null\"[],A\"|\",N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"exhausted\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"State\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"Outcome\",N\"null\"[I\"n\"]]]]]]]],N\"Lean.Parser.Command.ctor\"[N\"null\"[],A\"|\",N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"fuelExhausted\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"State\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"Outcome\",N\"null\"[I\"n\"]]]]]]]],N\"null\"[],N\"Lean.Parser.Command.optDeriving\"[N\"null\"[]],N\"null\"[]]"
+        }
+      ],
+      "declarations": [
+        "TNDLib.Matching.Algorithm.State",
+        "TNDLib.Matching.Algorithm.initial",
+        "TNDLib.Matching.Algorithm.isFree",
+        "TNDLib.Matching.Algorithm.findFree",
+        "TNDLib.Matching.Algorithm.receiverAtRank",
+        "TNDLib.Matching.Algorithm.advance",
+        "TNDLib.Matching.Algorithm.StepResult",
+        "TNDLib.Matching.Algorithm.step",
+        "TNDLib.Matching.Algorithm.Outcome",
+        "TNDLib.Matching.Algorithm.runFuel",
+        "TNDLib.Matching.Algorithm.run",
+        "TNDLib.Matching.Algorithm.hasMatching",
+        "TNDLib.Matching.Algorithm.outcomeHasMatching"
+      ],
+      "imports": [
+        "TNDLib.Matching.Basic",
+        "TNDLib.Matching.Proposal"
+      ],
+      "module_name": "TNDLib.Matching.Algorithm",
+      "namespaces": [
+        "TNDLib.Matching.Algorithm"
+      ],
+      "path": "pilot/TNDLib/Matching/Algorithm.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [
+        {
+          "constructors": [],
+          "fields": [
+            "proposerRank",
+            "receiverRank",
+            "proposerRank_injective",
+            "receiverRank_injective"
+          ],
+          "kind": "structure",
+          "name": "TNDLib.Matching.Preferences",
+          "shape": "N\"Lean.Parser.Command.structure\"[N\"Lean.Parser.Command.structureTk\"[A\"structure\"],N\"Lean.Parser.Command.declId\"[I\"Preferences\",N\"null\"[]],N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[N\"Lean.Parser.Term.explicitBinder\"[A\"(\",N\"null\"[I\"n\"],N\"null\"[A\":\",I\"Nat\"],N\"null\"[],A\")\"]],N\"null\"[]],N\"null\"[],N\"null\"[A\"where\",N\"null\"[],N\"Lean.Parser.Command.structFields\"[N\"null\"[N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"proposerRank\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]]]]]]],N\"null\"[]],N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"receiverRank\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]]]]]]],N\"null\"[]],N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"proposerRank_injective\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.forall\"[A\"∀\",N\"null\"[I\"p\"],N\"null\"[],A\",\",N\"Lean.Parser.Term.forall\"[A\"∀\",N\"null\"[N\"Lean.Parser.Term.implicitBinder\"[A\"{\",N\"null\"[I\"a\",I\"b\"],N\"null\"[],A\"}\"]],N\"null\"[],A\",\",N\"Lean.Parser.Term.arrow\"[N\"«term_=_»\"[N\"Lean.Parser.Term.app\"[I\"proposerRank\",N\"null\"[I\"p\",I\"a\"]],A\"=\",N\"Lean.Parser.Term.app\"[I\"proposerRank\",N\"null\"[I\"p\",I\"b\"]]],A\"→\",N\"«term_=_»\"[I\"a\",A\"=\",I\"b\"]]]]]]],N\"null\"[]],N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"receiverRank_injective\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.forall\"[A\"∀\",N\"null\"[I\"r\"],N\"null\"[],A\",\",N\"Lean.Parser.Term.forall\"[A\"∀\",N\"null\"[N\"Lean.Parser.Term.implicitBinder\"[A\"{\",N\"null\"[I\"a\",I\"b\"],N\"null\"[],A\"}\"]],N\"null\"[],A\",\",N\"Lean.Parser.Term.arrow\"[N\"«term_=_»\"[N\"Lean.Parser.Term.app\"[I\"receiverRank\",N\"null\"[I\"r\",I\"a\"]],A\"=\",N\"Lean.Parser.Term.app\"[I\"receiverRank\",N\"null\"[I\"r\",I\"b\"]]],A\"→\",N\"«term_=_»\"[I\"a\",A\"=\",I\"b\"]]]]]]],N\"null\"[]]]]],N\"Lean.Parser.Command.optDeriving\"[N\"null\"[]]]"
+        },
+        {
+          "constructors": [],
+          "fields": [
+            "partner",
+            "inverse",
+            "inverse_partner",
+            "partner_inverse"
+          ],
+          "kind": "structure",
+          "name": "TNDLib.Matching.PerfectMatching",
+          "shape": "N\"Lean.Parser.Command.structure\"[N\"Lean.Parser.Command.structureTk\"[A\"structure\"],N\"Lean.Parser.Command.declId\"[I\"PerfectMatching\",N\"null\"[]],N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[N\"Lean.Parser.Term.explicitBinder\"[A\"(\",N\"null\"[I\"n\"],N\"null\"[A\":\",I\"Nat\"],N\"null\"[],A\")\"]],N\"null\"[]],N\"null\"[],N\"null\"[A\"where\",N\"null\"[],N\"Lean.Parser.Command.structFields\"[N\"null\"[N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"partner\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]]]]]],N\"null\"[]],N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"inverse\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.arrow\"[N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]],A\"→\",N\"Lean.Parser.Term.app\"[I\"Fin\",N\"null\"[I\"n\"]]]]]],N\"null\"[]],N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"inverse_partner\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.forall\"[A\"∀\",N\"null\"[I\"p\"],N\"null\"[],A\",\",N\"«term_=_»\"[N\"Lean.Parser.Term.app\"[I\"inverse\",N\"null\"[N\"Lean.Parser.Term.paren\"[N\"Lean.Parser.Term.hygienicLParen\"[A\"(\",N\"hygieneInfo\"[I\"[anonymous]\"]],N\"Lean.Parser.Term.app\"[I\"partner\",N\"null\"[I\"p\"]],A\")\"]]],A\"=\",I\"p\"]]]]],N\"null\"[]],N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"partner_inverse\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.forall\"[A\"∀\",N\"null\"[I\"r\"],N\"null\"[],A\",\",N\"«term_=_»\"[N\"Lean.Parser.Term.app\"[I\"partner\",N\"null\"[N\"Lean.Parser.Term.paren\"[N\"Lean.Parser.Term.hygienicLParen\"[A\"(\",N\"hygieneInfo\"[I\"[anonymous]\"]],N\"Lean.Parser.Term.app\"[I\"inverse\",N\"null\"[I\"r\"]],A\")\"]]],A\"=\",I\"r\"]]]]],N\"null\"[]]]]],N\"Lean.Parser.Command.optDeriving\"[N\"null\"[]]]"
+        }
+      ],
+      "declarations": [
+        "TNDLib.Matching.Preferences",
+        "TNDLib.Matching.PerfectMatching",
+        "TNDLib.Matching.BlockingPair",
+        "TNDLib.Matching.blockingPairDecidable",
+        "TNDLib.Matching.Stable",
+        "TNDLib.Matching.checkStable",
+        "TNDLib.Matching.checkStable_eq_true_iff"
+      ],
+      "imports": [
+        "TNDLib.Finite"
+      ],
+      "module_name": "TNDLib.Matching.Basic",
+      "namespaces": [
+        "TNDLib.Matching"
+      ],
+      "path": "pilot/TNDLib/Matching/Basic.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [],
+      "declarations": [
+        "TNDLib.Matching.existsEmptyReceiverOfFree",
+        "TNDLib.Matching.findEmptyReceiver",
+        "TNDLib.Matching.findEmptyReceiver_none_iff",
+        "TNDLib.Matching.findEmptyReceiver_some",
+        "TNDLib.Matching.findEmptyReceiver_ne_none_of_free"
+      ],
+      "imports": [
+        "TNDLib.Matching.Rank"
+      ],
+      "module_name": "TNDLib.Matching.Cardinality",
+      "namespaces": [
+        "TNDLib.Matching"
+      ],
+      "path": "pilot/TNDLib/Matching/Cardinality.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [],
+      "declarations": [
+        "TNDLib.Matching.Algorithm.chosenReceiver",
+        "TNDLib.Matching.Algorithm.holdsChosenReceiver",
+        "TNDLib.Matching.Algorithm.chosenReceiver_injective",
+        "TNDLib.Matching.Algorithm.matchingOfFinished",
+        "TNDLib.Matching.Algorithm.holdsMatchingInverse",
+        "TNDLib.Matching.Algorithm.matchingStableOfHistory"
+      ],
+      "imports": [
+        "TNDLib.Matching.Algorithm",
+        "TNDLib.Matching.Rank",
+        "TNDLib.Matching.History"
+      ],
+      "module_name": "TNDLib.Matching.Completion",
+      "namespaces": [
+        "TNDLib.Matching.Algorithm"
+      ],
+      "path": "pilot/TNDLib/Matching/Completion.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [],
+      "declarations": [
+        "TNDLib.Matching.Algorithm.History",
+        "TNDLib.Matching.Algorithm.history_initial",
+        "TNDLib.Matching.Algorithm.advance_preserves_held_bound",
+        "TNDLib.Matching.Algorithm.history_old_advance",
+        "TNDLib.Matching.Algorithm.offer_candidate_bound",
+        "TNDLib.Matching.Algorithm.advance_new_bound",
+        "TNDLib.Matching.Algorithm.history_advance_proposer",
+        "TNDLib.Matching.Algorithm.history_advance",
+        "TNDLib.Matching.Algorithm.free_nextRank_lt"
+      ],
+      "imports": [
+        "TNDLib.Matching.Algorithm",
+        "TNDLib.Matching.Cardinality"
+      ],
+      "module_name": "TNDLib.Matching.History",
+      "namespaces": [
+        "TNDLib.Matching.Algorithm"
+      ],
+      "path": "pilot/TNDLib/Matching/History.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [],
+      "declarations": [
+        "TNDLib.Matching.Algorithm.Consistent",
+        "TNDLib.Matching.Algorithm.AssignedBelow",
+        "TNDLib.Matching.Algorithm.offer_eq_some_cases",
+        "TNDLib.Matching.Algorithm.advance_holding_cases",
+        "TNDLib.Matching.Algorithm.consistent_advance",
+        "TNDLib.Matching.Algorithm.consistent_initial",
+        "TNDLib.Matching.Algorithm.assignedBelow_initial",
+        "TNDLib.Matching.Algorithm.advance_nextRank_le",
+        "TNDLib.Matching.Algorithm.assignedBelow_advance"
+      ],
+      "imports": [
+        "TNDLib.Matching.Algorithm"
+      ],
+      "module_name": "TNDLib.Matching.Invariants",
+      "namespaces": [
+        "TNDLib.Matching.Algorithm"
+      ],
+      "path": "pilot/TNDLib/Matching/Invariants.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [],
+      "declarations": [
+        "TNDLib.Matching.Algorithm.sumMapLeLengthMul",
+        "TNDLib.Matching.Algorithm.sumMapZero",
+        "TNDLib.Matching.Algorithm.sumIncrementOfAbsent",
+        "TNDLib.Matching.Algorithm.sumIncrementOfMem",
+        "TNDLib.Matching.Algorithm.proposalCount",
+        "TNDLib.Matching.Algorithm.proposalCount_initial",
+        "TNDLib.Matching.Algorithm.proposalCount_le",
+        "TNDLib.Matching.Algorithm.proposalCount_advance",
+        "TNDLib.Matching.Algorithm.advance_bounded"
+      ],
+      "imports": [
+        "TNDLib.Matching.Algorithm",
+        "TNDLib.Matching.Rank"
+      ],
+      "module_name": "TNDLib.Matching.Measure",
+      "namespaces": [
+        "TNDLib.Matching.Algorithm"
+      ],
+      "path": "pilot/TNDLib/Matching/Measure.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [],
+      "declarations": [],
+      "imports": [
+        "TNDLib.Matching.Basic",
+        "TNDLib.Matching.Proposal",
+        "TNDLib.Matching.Rank",
+        "TNDLib.Matching.Cardinality",
+        "TNDLib.Matching.Algorithm",
+        "TNDLib.Matching.Measure",
+        "TNDLib.Matching.History",
+        "TNDLib.Matching.Progress",
+        "TNDLib.Matching.Completion",
+        "TNDLib.Matching.StableMatch"
+      ],
+      "module_name": "TNDLib.Matching.Pilot",
+      "namespaces": [],
+      "path": "pilot/TNDLib/Matching/Pilot.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [],
+      "declarations": [
+        "TNDLib.Matching.Algorithm.isFree_eq_true_iff",
+        "TNDLib.Matching.Algorithm.findFree_sound",
+        "TNDLib.Matching.Algorithm.receiverAtRank_ne_none",
+        "TNDLib.Matching.Algorithm.receiverAtRank_sound",
+        "TNDLib.Matching.Algorithm.offeredReceiver_tried",
+        "TNDLib.Matching.Algorithm.nextReceiver_not_tried"
+      ],
+      "imports": [
+        "TNDLib.Matching.Algorithm",
+        "TNDLib.Matching.Rank"
+      ],
+      "module_name": "TNDLib.Matching.Progress",
+      "namespaces": [
+        "TNDLib.Matching.Algorithm"
+      ],
+      "path": "pilot/TNDLib/Matching/Progress.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [],
+      "declarations": [
+        "TNDLib.Matching.Proposal.prefer",
+        "TNDLib.Matching.Proposal.preferSpec",
+        "TNDLib.Matching.Proposal.preferRank_le_current",
+        "TNDLib.Matching.Proposal.preferRank_le_candidate",
+        "TNDLib.Matching.Proposal.offer",
+        "TNDLib.Matching.Proposal.offer_nonempty",
+        "TNDLib.Matching.Proposal.offer_preserves_rank"
+      ],
+      "imports": [
+        "Init"
+      ],
+      "module_name": "TNDLib.Matching.Proposal",
+      "namespaces": [
+        "TNDLib.Matching.Proposal"
+      ],
+      "path": "pilot/TNDLib/Matching/Proposal.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [],
+      "declarations": [
+        "TNDLib.Matching.memAppendOfMemInsert",
+        "TNDLib.Matching.nodupLengthLeOfSubset",
+        "TNDLib.Matching.nodupOfFnOfInjective",
+        "TNDLib.Matching.surjectiveOfInjective",
+        "TNDLib.Matching.inverseRank",
+        "TNDLib.Matching.applyInverseRank",
+        "TNDLib.Matching.inverseRankApply"
+      ],
+      "imports": [
+        "TNDLib.Matching.Basic"
+      ],
+      "module_name": "TNDLib.Matching.Rank",
+      "namespaces": [
+        "TNDLib.Matching"
+      ],
+      "path": "pilot/TNDLib/Matching/Rank.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [],
+      "declarations": [
+        "TNDLib.Matching.Algorithm.finishedValid",
+        "TNDLib.Matching.Algorithm.stableMatch",
+        "TNDLib.Matching.stableMatch",
+        "TNDLib.Matching.stableMatch_stable",
+        "TNDLib.Matching.existsStableMatching"
+      ],
+      "imports": [
+        "TNDLib.Matching.Completion",
+        "TNDLib.Matching.Termination"
+      ],
+      "module_name": "TNDLib.Matching.StableMatch",
+      "namespaces": [
+        "TNDLib.Matching.Algorithm",
+        "TNDLib.Matching"
+      ],
+      "path": "pilot/TNDLib/Matching/StableMatch.lean",
+      "universes": []
+    },
+    {
+      "data_declarations": [
+        {
+          "constructors": [],
+          "fields": [
+            "bounded",
+            "consistent",
+            "history",
+            "assigned"
+          ],
+          "kind": "structure",
+          "name": "TNDLib.Matching.Algorithm.Valid",
+          "shape": "N\"Lean.Parser.Command.structure\"[N\"Lean.Parser.Command.structureTk\"[A\"structure\"],N\"Lean.Parser.Command.declId\"[I\"Valid\",N\"null\"[]],N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[N\"Lean.Parser.Term.explicitBinder\"[A\"(\",N\"null\"[I\"preferences\"],N\"null\"[A\":\",N\"Lean.Parser.Term.app\"[I\"Preferences\",N\"null\"[I\"n\"]]],N\"null\"[],A\")\"],N\"Lean.Parser.Term.explicitBinder\"[A\"(\",N\"null\"[I\"state\"],N\"null\"[A\":\",N\"Lean.Parser.Term.app\"[I\"State\",N\"null\"[I\"n\"]]],N\"null\"[],A\")\"]],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.prop\"[A\"Prop\"]]]],N\"null\"[],N\"null\"[A\"where\",N\"null\"[],N\"Lean.Parser.Command.structFields\"[N\"null\"[N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"bounded\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.forall\"[A\"∀\",N\"null\"[I\"proposer\"],N\"null\"[],A\",\",N\"«term_≤_»\"[N\"Lean.Parser.Term.app\"[I\"state.nextRank\",N\"null\"[I\"proposer\"]],A\"≤\",I\"n\"]]]]],N\"null\"[]],N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"consistent\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.app\"[I\"Consistent\",N\"null\"[I\"state\"]]]]],N\"null\"[]],N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"history\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.app\"[I\"History\",N\"null\"[I\"preferences\",I\"state\"]]]]],N\"null\"[]],N\"Lean.Parser.Command.structSimpleBinder\"[N\"Lean.Parser.Command.declModifiers\"[N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[],N\"null\"[]],I\"assigned\",N\"Lean.Parser.Command.optDeclSig\"[N\"null\"[],N\"null\"[N\"Lean.Parser.Term.typeSpec\"[A\":\",N\"Lean.Parser.Term.app\"[I\"AssignedBelow\",N\"null\"[I\"preferences\",I\"state\"]]]]],N\"null\"[]]]]],N\"Lean.Parser.Command.optDeriving\"[N\"null\"[]]]"
+        }
+      ],
+      "declarations": [
+        "TNDLib.Matching.Algorithm.Valid",
+        "TNDLib.Matching.Algorithm.valid_initial",
+        "TNDLib.Matching.Algorithm.proposerStep",
+        "TNDLib.Matching.Algorithm.step_finished",
+        "TNDLib.Matching.Algorithm.step_advanced",
+        "TNDLib.Matching.Algorithm.continueRun",
+        "TNDLib.Matching.Algorithm.runFuel_finished",
+        "TNDLib.Matching.Algorithm.runFuel_advanced",
+        "TNDLib.Matching.Algorithm.fuelBound_advance",
+        "TNDLib.Matching.Algorithm.valid_advance",
+        "TNDLib.Matching.Algorithm.runFuel_finishes",
+        "TNDLib.Matching.Algorithm.run_finishes"
+      ],
+      "imports": [
+        "TNDLib.Matching.Progress",
+        "TNDLib.Matching.History",
+        "TNDLib.Matching.Measure",
+        "TNDLib.Matching.Invariants"
+      ],
+      "module_name": "TNDLib.Matching.Termination",
+      "namespaces": [
+        "TNDLib.Matching.Algorithm"
+      ],
+      "path": "pilot/TNDLib/Matching/Termination.lean",
+      "universes": []
+    }
+  ]
+}

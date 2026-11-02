@@ -79,9 +79,10 @@ jobs:
       - name: Extract closing-issue numbers
         run: |
           uv run --frozen --extra dev python -m gate.state.close_on_merge_cli \
+            --maintainer-ok \
             --body-file .close-tmp/body.txt \
             > .close-tmp/numbers.txt
-          echo "Validated Choir task issue: #$(cat .close-tmp/numbers.txt)"
+          echo "Validated Choir task issue: $(cat .close-tmp/numbers.txt)"
 
       - name: Mark the validated Choir task done
         env:
@@ -91,8 +92,10 @@ jobs:
         run: |
           set -euo pipefail
           issue=$(cat .close-tmp/numbers.txt)
-          uv run --frozen --extra dev python -m gate.state.issue_updates \
-            --repo "$REPO" --issue "$issue" complete --pr "$PR_NUMBER"
+          if [ "$issue" != "maintainer" ]; then
+            uv run --frozen --extra dev python -m gate.state.issue_updates \
+              --repo "$REPO" --issue "$issue" complete --pr "$PR_NUMBER"
+          fi
 
       - name: Repin unclaimed tasks on the files this PR touched
         env:

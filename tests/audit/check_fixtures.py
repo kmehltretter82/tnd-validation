@@ -8,6 +8,7 @@ validation, not Docker isolation; never replace fixture inputs with PR sources.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import subprocess
@@ -385,6 +386,86 @@ def main() -> int:  # noqa: PLR0915
                 "known_gap": True,
             }
         )
+
+        # Verify that the source-admission and import-DAG layer rejects both an
+        # unlisted workspace module and an unimported library module in policy.
+        admit_spec = importlib.util.spec_from_file_location(
+            "tnd_fixture_admit", project / "audit/admission/admit.py"
+        )
+        admission_mod = importlib.util.module_from_spec(admit_spec)
+        admit_spec.loader.exec_module(admission_mod)
+
+        try:
+            admission_mod.snapshot(root / "unimported-module", root / "unimported-staged")
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("unlisted module passed admission snapshot")
+        results.append(
+            {
+                "fixture": "unimported_module_rejected_by_admission",
+                "passed": True,
+                "result": "rejected",
+            }
+        )
+
+        # Verify Mission H01 & L06 calibration solutions and M01 cross-mission solution.
+        mission_task_fixtures = [
+            (
+                "mission_h01_calibration_solution",
+                project / "tests/tasks/cantor_diagonal_discrepancy_challenge.lean",
+                project / "tests/tasks/cantor_diagonal_discrepancy_solution.lean",
+                "TNDTask.cantorDiagonalDiscrepancy",
+            ),
+            (
+                "mission_l06_calibration_solution",
+                project / "tests/tasks/lorenzen_order_cancel_left_challenge.lean",
+                project / "tests/tasks/lorenzen_order_cancel_left_solution.lean",
+                "TNDTask.lorenzenOrderCancelLeft",
+            ),
+            (
+                "mission_m01_cross_mission_solution",
+                project / "tasks/cert_cantor_falsifier.lean",
+                project / "tests/tasks/cert_cantor_falsifier_solution.lean",
+                "TNDTask.certCantorFalsifier",
+            ),
+        ]
+        for fixture_name, chal_path, sol_path, decl_name in mission_task_fixtures:
+            config.write_text(json.dumps(config_data([decl_name], "TNDTask")))
+            chal_export = export_source(
+                args.lean,
+                args.exporter,
+                root / (fixture_name + "-base"),
+                chal_path.read_text(),
+                {},
+                task_env,
+                "TNDTask",
+            )
+            sol_export = export_source(
+                args.lean,
+                args.exporter,
+                root / (fixture_name + "-head"),
+                sol_path.read_text(),
+                {},
+                task_env,
+                "TNDTask",
+            )
+            check = subprocess.run(
+                [str(args.checker), str(config), str(chal_export), str(sol_export)],
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=180,
+                check=False,
+            )
+            assert check.returncode == 0, (fixture_name, check.stdout)
+            results.append(
+                {
+                    "fixture": fixture_name,
+                    "passed": True,
+                    "result": json.loads(check.stdout)["status"],
+                }
+            )
     print(json.dumps({"passed": len(results), "fixtures": results}, indent=2))
     return 0
 

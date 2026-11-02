@@ -292,3 +292,39 @@ def test_local_git_server_filter_includes_limit_and_omits_larger_blob(tmp_path):
         check=False,
     )
     assert absent.returncode != 0
+
+
+def test_maintainer_mode_metadata_and_checkout_marker(monkeypatch, tmp_path):
+    metadata = pr_metadata(
+        body="Promote map_exists\n\ntnd-pr-mode: maintainer\n",
+        user={"login": "kmehltretter82"},
+        head={"sha": HEAD, "repo": {"full_name": REPO}},
+    )
+    files = [
+        file_metadata(filename="audit/exports.json"),
+    ]
+    api_fixture(monkeypatch, metadata, files)
+    changes, is_maintainer = tnd_fetch._trusted_metadata_with_mode(
+        REPO, 7, BASE, HEAD
+    )
+    assert is_maintainer is True
+    assert changes == [tnd_fetch.Change("audit/exports.json", "modified", 3, 1, OID)]
+
+    # Non-maintainer or fork PR with tnd-pr-mode: maintainer is rejected.
+    bad_fork = pr_metadata(
+        body="tnd-pr-mode: maintainer\n",
+        user={"login": "kmehltretter82"},
+        head={"sha": HEAD, "repo": {"full_name": "fork/tndlib"}},
+    )
+    api_fixture(monkeypatch, bad_fork, files)
+    with pytest.raises(ValueError, match="same-repository"):
+        tnd_fetch._trusted_metadata_with_mode(REPO, 7, BASE, HEAD)
+
+    # Verified maintainer checkout marker round-trips and fails closed on mismatch.
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".git/tnd-maintainer-pr.json").write_text(
+        f'{{"mode": "maintainer", "pr": 7, "base_sha": "{BASE}", "head_sha": "{HEAD}"}}\n'
+    )
+    assert tnd_fetch.is_verified_maintainer_checkout(tmp_path, BASE, HEAD) is True
+    with pytest.raises(ValueError, match="invalid maintainer"):
+        tnd_fetch.is_verified_maintainer_checkout(tmp_path, BASE, "c" * 40)

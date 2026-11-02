@@ -103,15 +103,25 @@ def admit_into_container(
     expected_hashes: dict[str, str] | None = None,
     task_id: str | None = None,
     role: str = "solution",
+    policy_data: dict | None = None,
+    policy_bytes: bytes | None = None,
 ) -> dict:
     """Stage and parse exact source bytes in a disposable parser container."""
     staged = staged.absolute()
     staged.mkdir(parents=True, exist_ok=False)
-    hashes = admit.snapshot(source.resolve(), staged, task_id, role)
+    hashes = (
+        admit.snapshot(source.resolve(), staged, task_id, role)
+        if policy_data is None
+        else admit.snapshot(source.resolve(), staged, task_id, role, policy_data=policy_data)
+    )
     if expected_hashes is not None and hashes != expected_hashes:
         raise ValueError("admission snapshot differs from exact Git source hashes")
     check_seccomp()
-    config, task = admit.policy_for(task_id, role)
+    config, task = (
+        admit.policy_for(task_id, role)
+        if policy_data is None
+        else admit.policy_for(task_id, role, policy_data=policy_data)
+    )
     policy_path = staged.with_name(staged.name + "-parser-policy.json")
     policy_path.write_text(json.dumps(config))
     name = "tnd-parser-" + uuid.uuid4().hex
@@ -137,9 +147,10 @@ def admit_into_container(
     }:
         raise ValueError("unexpected parser output")
     admit.verify_exact(staged, hashes)
+    raw_policy = admit.POLICY.read_bytes() if policy_bytes is None else policy_bytes
     report.update(
         source_sha256=hashes,
-        policy_sha256=hashlib.sha256(admit.POLICY.read_bytes()).hexdigest(),
+        policy_sha256=hashlib.sha256(raw_policy).hexdigest(),
         parser_sha256=hashlib.sha256((admit.HERE / "Main.lean").read_bytes()).hexdigest(),
         parser_isolation="development-docker",
     )

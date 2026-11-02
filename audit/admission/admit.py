@@ -85,8 +85,15 @@ def run_parser(
     )
 
 
-def policy_for(task_id: str | None = None, role: str = "solution") -> tuple[dict, dict | None]:
-    policy = json.loads(POLICY.read_text())
+def policy_for(
+    task_id: str | None = None,
+    role: str = "solution",
+    *,
+    policy_data: dict | None = None,
+) -> tuple[dict, dict | None]:
+    policy = json.loads(POLICY.read_text()) if policy_data is None else policy_data
+    if not isinstance(policy, dict) or not isinstance(policy.get("source_files"), list):
+        raise ValueError("invalid trusted source inventory")
     specs = policy["source_files"]
     expected = {entry["path"] for entry in specs}
     if len(expected) != len(specs) or "TNDLib.lean" not in expected:
@@ -98,12 +105,35 @@ def policy_for(task_id: str | None = None, role: str = "solution") -> tuple[dict
     for entry in specs:
         if entry["module_name"].replace(".", "/") + ".lean" != entry["path"]:
             raise ValueError("module path does not match trusted policy")
-        if entry["path"] != "TNDLib.lean" and entry["imports"] != ["Init"]:
-            raise ValueError("prototype module imports must be exactly Init")
+        if entry["path"] != "TNDLib.lean":
+            imports = entry.get("imports")
+            if (
+                not isinstance(imports, list)
+                or not imports
+                or len(set(imports)) != len(imports)
+                or not all(imp == "Init" or imp in modules for imp in imports)
+            ):
+                raise ValueError(
+                    "library module imports must be within Init and approved TNDLib DAG"
+                )
+    # Verify that library module imports form an acyclic DAG.
+    import_map = {
+        entry["module_name"]: [imp for imp in entry["imports"] if imp != "Init"]
+        for entry in specs
+        if entry["path"] != "TNDLib.lean"
+    }
+    for mod, direct_imports in import_map.items():
+        frontier = set(direct_imports)
+        for _ in range(len(import_map)):
+            frontier |= {nxt for cur in list(frontier) for nxt in import_map.get(cur, [])}
+        if mod in frontier:
+            raise ValueError(f"library module import cycle detected involving {mod}")
     if role not in {"challenge", "solution"}:
         raise ValueError("unknown task admission role")
     task = None
     if task_id is not None:
+        if not isinstance(policy.get("task_files"), list):
+            raise ValueError("task is absent from maintained admission policy")
         matching = [entry for entry in policy["task_files"] if entry["id"] == task_id]
         if len(matching) != 1:
             raise ValueError("task is absent from maintained admission policy")
@@ -156,9 +186,14 @@ def source_bytes(source: Path, expected: set[str]) -> dict[str, bytes]:
 
 
 def snapshot(
-    source: Path, target: Path, task_id: str | None = None, role: str = "solution"
+    source: Path,
+    target: Path,
+    task_id: str | None = None,
+    role: str = "solution",
+    *,
+    policy_data: dict | None = None,
 ) -> dict[str, str]:
-    config, task = policy_for(task_id, role)
+    config, task = policy_for(task_id, role, policy_data=policy_data)
     expected = {entry["path"] for entry in config["source_files"]}
     if task is not None:
         expected.add(task["path"])
@@ -194,6 +229,8 @@ def admit_into(
     expected_hashes: dict[str, str] | None = None,
     task_id: str | None = None,
     role: str = "solution",
+    policy_data: dict | None = None,
+    policy_bytes: bytes | None = None,
 ) -> dict:
     """Parse fresh staged bytes; callers must build this exact directory read-only."""
     lean = lean.resolve()
@@ -204,10 +241,10 @@ def admit_into(
     env["PATH"] = str(lean.parent) + os.pathsep + "/usr/bin:/bin"
     env["LEAN_NUM_THREADS"] = "2"
     staged.mkdir(parents=True, exist_ok=False)
-    hashes = snapshot(source.resolve(), staged, task_id, role)
+    hashes = snapshot(source.resolve(), staged, task_id, role, policy_data=policy_data)
     if expected_hashes is not None and hashes != expected_hashes:
         raise ValueError("admission snapshot differs from exact Git source hashes")
-    config, task = policy_for(task_id, role)
+    config, task = policy_for(task_id, role, policy_data=policy_data)
     config_path = staged.with_name(staged.name + "-parser-policy.json")
     config_path.write_text(json.dumps(config))
     checked = run_parser(
@@ -225,9 +262,10 @@ def admit_into(
     }:
         raise ValueError("unexpected parser output")
     verify_exact(staged, hashes)
+    raw_policy = POLICY.read_bytes() if policy_bytes is None else policy_bytes
     report.update(
         source_sha256=hashes,
-        policy_sha256=hashlib.sha256(POLICY.read_bytes()).hexdigest(),
+        policy_sha256=hashlib.sha256(raw_policy).hexdigest(),
         parser_sha256=hashlib.sha256((HERE / "Main.lean").read_bytes()).hexdigest(),
     )
     if task is not None:

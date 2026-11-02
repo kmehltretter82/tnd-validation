@@ -1,0 +1,22 @@
+{
+  "source_files": [
+    {
+      "path": "pilot/TNDLib/Matching/Proposal.lean",
+      "module_name": "TNDLib.Matching.Proposal",
+      "namespace_name": "TNDLib.Matching.Proposal",
+      "imports": [
+        "Init"
+      ],
+      "declarations": [
+        "TNDLib.Matching.Proposal.prefer",
+        "TNDLib.Matching.Proposal.preferSpec",
+        "TNDLib.Matching.Proposal.preferRank_le_current",
+        "TNDLib.Matching.Proposal.preferRank_le_candidate",
+        "TNDLib.Matching.Proposal.offer",
+        "TNDLib.Matching.Proposal.offer_nonempty",
+        "TNDLib.Matching.Proposal.offer_preserves_rank"
+      ],
+      "universes": []
+    }
+  ]
+}

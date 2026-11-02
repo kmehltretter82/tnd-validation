@@ -10,7 +10,7 @@ import pytest
 import yaml
 
 from gate.checks import BRANCH_PROTECTION_CONTEXTS, REQUIRED_PRESENT
-from orchestrator import github_app, governance, merge_lane, prs
+from orchestrator import config_audit, github_app, governance, merge_lane, prs
 from orchestrator.tnd_verification import require_app_only_merge_ruleset
 
 REPO = "owner/tndlib"
@@ -385,3 +385,94 @@ def test_github_app_token_minting_validates_single_repo_installation(monkeypatch
         github_app.mint_installation_token("kmehltretter82/tndlib", "12345", "pem")
         == "ghs_minted_token"
     )
+
+
+def test_app_token_redacted_bypass_actors_succeeds_only_with_self_always_bypass():
+    base_ruleset = {
+        "id": 26325579,
+        "name": "tnd-merge-lane-only",
+        "target": "branch",
+        "enforcement": "active",
+        "conditions": {"ref_name": {"include": ["refs/heads/main"], "exclude": []}},
+        "rules": [{"type": "update"}, {"type": "non_fast_forward"}, {"type": "deletion"}],
+        "current_user_can_bypass": "always",
+    }
+    for redacted in (
+        base_ruleset,
+        {**base_ruleset, "bypass_actors": None},
+        {**base_ruleset, "bypass_actors": []},
+    ):
+        matched = require_app_only_merge_ruleset([redacted], app_id=5555437)
+        assert matched == {
+            "ruleset_id": 26325579,
+            "name": "tnd-merge-lane-only",
+            "verification_mode": "app_token_self_bypass",
+        }
+    for non_bypass in ("never", "pull_requests_only", None):
+        with pytest.raises(ValueError, match="only bypass actor is GitHub App 5555437"):
+            require_app_only_merge_ruleset(
+                [{**base_ruleset, "current_user_can_bypass": non_bypass}],
+                app_id=5555437,
+            )
+
+
+def test_owner_config_audit_requires_unredacted_exclusive_app_bypass_and_no_owner_bypass(
+    monkeypatch,
+):
+    protection = {
+        "enforce_admins": {"enabled": True},
+        "required_status_checks": {
+            "strict": True,
+            "contexts": list(BRANCH_PROTECTION_CONTEXTS),
+        },
+    }
+    ruleset = {
+        "id": 26325579,
+        "name": "tnd-merge-lane-only",
+        "target": "branch",
+        "enforcement": "active",
+        "conditions": {"ref_name": {"include": ["refs/heads/main"], "exclude": []}},
+        "rules": [{"type": "update"}],
+        "bypass_actors": [
+            {"actor_type": "Integration", "actor_id": 5555437, "bypass_mode": "always"}
+        ],
+        "current_user_can_bypass": "never",
+    }
+
+    def gh(*args):
+        endpoint = args[-1]
+        if endpoint.endswith("/protection"):
+            return __import__("json").dumps(protection)
+        if endpoint.endswith("/rulesets"):
+            return __import__("json").dumps([{"id": 26325579}])
+        if endpoint.endswith("/rulesets/26325579"):
+            return __import__("json").dumps(ruleset)
+        raise AssertionError(args)
+
+    monkeypatch.setattr(config_audit, "_gh", gh)
+    report = config_audit.audit_merge_config(
+        "kmehltretter82/tnd-validation",
+        app_id=5555437,
+        expected_ruleset_id=26325579,
+    )
+    assert report["status"] == "verified-merge-config"
+    assert report["verification_mode"] == "unredacted_bypass_actors"
+    assert report["owner_can_bypass"] == "never"
+
+    # Redacted bypass_actors must be rejected by the owner configuration audit.
+    ruleset_redacted = {
+        k: v for k, v in ruleset.items() if k != "bypass_actors"
+    }
+    ruleset_redacted["current_user_can_bypass"] = "always"
+    ruleset.clear()
+    ruleset.update(ruleset_redacted)
+    with pytest.raises(prs.PRError, match="only bypass actor"):
+        config_audit.audit_merge_config("kmehltretter82/tnd-validation", app_id=5555437)
+
+    # Owner with bypass permission must be rejected.
+    ruleset["bypass_actors"] = [
+        {"actor_type": "Integration", "actor_id": 5555437, "bypass_mode": "always"}
+    ]
+    ruleset["current_user_can_bypass"] = "always"
+    with pytest.raises(prs.PRError, match="owner/caller must not have ruleset bypass"):
+        config_audit.audit_merge_config("kmehltretter82/tnd-validation", app_id=5555437)

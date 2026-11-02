@@ -34,7 +34,12 @@ from gate.verify.comparator_cli import (
     _resolve_pr_target,
     materialize_workspace,
 )
-from gate.verify.tnd_fetch import trusted_metadata, verify_fetched
+from gate.verify.tnd_fetch import (
+    _trusted_metadata_with_mode,
+    is_verified_maintainer_checkout,
+    trusted_metadata,
+    verify_fetched,
+)
 from gate.verify.tnd_policy import inspect_tree
 
 PROJECT = Path(__file__).resolve().parents[2]
@@ -150,6 +155,21 @@ def run_container(
         ensure_container_removed(name)
 
 
+def _check_maintainer_mode(args: argparse.Namespace) -> bool:
+    base, head = getattr(args, "base", None), getattr(args, "head", None)
+    if not (base and head and is_verified_maintainer_checkout(PROJECT, base, head)):
+        return False
+    changes, is_maintainer = _trusted_metadata_with_mode(args.repo, args.pr, base, head)
+    if not is_maintainer:
+        raise ValueError("maintainer checkout marker does not match live PR mode")
+    verify_fetched(PROJECT, base, head, changes, allow_maintainer_paths=True)
+    print(
+        "Maintainer PR mode: full-library replay in verify-tnd and "
+        "maintainer-regression apply; single-task comparator not applicable."
+    )
+    return True
+
+
 def verify(args: argparse.Namespace) -> None:
     if os.getuid() == 0:
         raise ValueError("run comparator as an unprivileged user")
@@ -158,6 +178,8 @@ def verify(args: argparse.Namespace) -> None:
     quota_parent = getattr(args, "quota_parent", None)
     if not isinstance(quota_parent, Path) or not quota_parent.is_absolute():
         raise ValueError("a canonical absolute --quota-parent is required")
+    if _check_maintainer_mode(args):
+        return
     target = _resolve_pr_target(args.repo, args.pr)
     if isinstance(target, str):
         raise ValueError(f"a registered approved task is required: {target}")

@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 1
+          fetch-depth: 0
           fetch-tags: false
           persist-credentials: false
 
@@ -84,6 +84,21 @@ jobs:
             --lean "$lean_bin" \
             --checker audit/.lake/build/bin/tnd-check \
             --exporter audit/.lake/build/bin/tnd-export
+
+      - name: Verify the constructive matching development pilot
+        shell: bash
+        env:
+          LEAN_NUM_THREADS: '2'
+        run: |
+          set -euo pipefail
+          candidate="$(git rev-parse HEAD)"
+          lake build TNDMatchingPilot
+          for source in tests/matching/*.lean; do
+            lake env lean "$source"
+          done
+          python3 audit/matching/test_admission.py --lean "$TND_LEAN_ROOT/bin/lean"
+          python3 tests/matching/check_source.py --revision "$candidate"
+          python3 tests/matching/check_downstream.py --revision "$candidate"
 
       - name: Run Python regression, syntax, and style checks
         run: |

@@ -229,3 +229,14 @@ def test_close_extraction_emits_the_single_unique_reference(tmp_path, capsys):
     body_path.write_text("Closes #17; also resolves #17")
     assert close_on_merge_main(["--body-file", str(body_path)]) == 0
     assert capsys.readouterr().out == "17\n"
+
+
+def test_close_extraction_accepts_maintainer_mode_without_closing_refs(tmp_path, capsys):
+    body_path = tmp_path / "pr-body.txt"
+    body_path.write_text("Promote task\n\ntnd-pr-mode: maintainer\n")
+    assert close_on_merge_main(["--maintainer-ok", "--body-file", str(body_path)]) == 0
+    assert capsys.readouterr().out == "maintainer\n"
+
+    body_path.write_text("Closes #17\n\ntnd-pr-mode: maintainer\n")
+    assert close_on_merge_main(["--maintainer-ok", "--body-file", str(body_path)]) == 1
+    assert "must not contain closing-issue" in capsys.readouterr().err

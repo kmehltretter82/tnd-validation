@@ -5,43 +5,337 @@
       "id": "map_exists",
       "source_path": "tasks/map_exists.lean",
       "namespace_name": "TNDTask",
-      "expected_exports": ["TNDTask.mapExists"]
+      "expected_exports": [
+        "TNDTask.mapExists"
+      ],
+      "mission_id": null,
+      "paper_id": null,
+      "title": "Transport existential witness through a function",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": []
     },
     {
       "id": "not_not_em",
       "source_path": "tasks/not_not_em.lean",
       "namespace_name": "TNDTask",
-      "expected_exports": ["TNDTask.notNotEm"]
+      "expected_exports": [
+        "TNDTask.notNotEm"
+      ],
+      "mission_id": null,
+      "paper_id": null,
+      "title": "Double negation of excluded middle",
+      "status": "solved",
+      "ownership": "merged",
+      "proof_status": "proved-development",
+      "dependencies": []
     },
     {
       "id": "not_exists_iff",
       "source_path": "tasks/not_exists_iff.lean",
       "namespace_name": "TNDTask",
-      "expected_exports": ["TNDTask.notExistsIff"]
+      "expected_exports": [
+        "TNDTask.notExistsIff"
+      ],
+      "mission_id": null,
+      "paper_id": null,
+      "title": "Constructive negation of existential quantifier",
+      "status": "solved",
+      "ownership": "merged",
+      "proof_status": "proved-development",
+      "dependencies": []
     },
     {
       "id": "em_of_decidable",
       "source_path": "tasks/em_of_decidable.lean",
       "namespace_name": "TNDTask",
-      "expected_exports": ["TNDTask.emOfDecidable"]
+      "expected_exports": [
+        "TNDTask.emOfDecidable"
+      ],
+      "mission_id": null,
+      "paper_id": null,
+      "title": "Excluded middle from explicit Decidable instance",
+      "status": "solved",
+      "ownership": "merged",
+      "proof_status": "proved-development",
+      "dependencies": []
     },
     {
       "id": "two_mul",
       "source_path": "tasks/two_mul.lean",
       "namespace_name": "TNDTask",
-      "expected_exports": ["TNDTask.twoMul"]
+      "expected_exports": [
+        "TNDTask.twoMul"
+      ],
+      "mission_id": null,
+      "paper_id": null,
+      "title": "Two times n equals n plus n",
+      "status": "solved",
+      "ownership": "merged",
+      "proof_status": "proved-development",
+      "dependencies": []
     },
     {
       "id": "length_reverse",
       "source_path": "tasks/length_reverse.lean",
       "namespace_name": "TNDTask",
-      "expected_exports": ["TNDTask.lengthReverse"]
+      "expected_exports": [
+        "TNDTask.lengthReverse"
+      ],
+      "mission_id": null,
+      "paper_id": null,
+      "title": "List reversal preserves length",
+      "status": "solved",
+      "ownership": "merged",
+      "proof_status": "proved-development",
+      "dependencies": []
     },
     {
       "id": "select_head_witness",
       "source_path": "tasks/select_head_witness.lean",
       "namespace_name": "TNDTask",
-      "expected_exports": ["TNDTask.selectHeadWitness"]
+      "expected_exports": [
+        "TNDTask.selectHeadWitness"
+      ],
+      "mission_id": null,
+      "paper_id": null,
+      "title": "Head witness of finite selection",
+      "status": "solved",
+      "ownership": "merged",
+      "proof_status": "proved-development",
+      "dependencies": []
+    },
+    {
+      "id": "cantor_flip_involution",
+      "source_path": "tasks/cantor_flip_involution.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.cantorFlipInvolution"
+      ],
+      "mission_id": "mission-h01-cantor",
+      "paper_id": "H01",
+      "title": "Cantor boolean flip is an involution",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Cantor.flip"
+      ]
+    },
+    {
+      "id": "cantor_diagonal_spec",
+      "source_path": "tasks/cantor_diagonal_spec.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.cantorDiagonalSpec"
+      ],
+      "mission_id": "mission-h01-cantor",
+      "paper_id": "H01",
+      "title": "Cantor diagonal stream satisfies pointwise discrepancy specification",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Cantor.diagonal",
+        "TNDLib.Cantor.DiscrepancyAt",
+        "TNDLib.Cantor.diagonalDiscrepancy"
+      ]
+    },
+    {
+      "id": "cantor_discrepancy_ne",
+      "source_path": "tasks/cantor_discrepancy_ne.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.cantorDiscrepancyNe"
+      ],
+      "mission_id": "mission-h01-cantor",
+      "paper_id": "H01",
+      "title": "Pointwise discrepancy refutes equality at coordinate n",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Cantor.DiscrepancyAt",
+        "TNDLib.Cantor.flip_ne_self"
+      ]
+    },
+    {
+      "id": "cantor_no_surjection",
+      "source_path": "tasks/cantor_no_surjection.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.cantorNoSurjection"
+      ],
+      "mission_id": "mission-h01-cantor",
+      "paper_id": "H01",
+      "title": "Constructive diagonal refutation of stream-row equality",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Cantor.diagonal",
+        "TNDLib.Cantor.diagonal_differ_at"
+      ]
+    },
+    {
+      "id": "lorenzen_meet_idem",
+      "source_path": "tasks/lorenzen_meet_idem.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.lorenzenMeetIdem"
+      ],
+      "mission_id": "mission-l06-lorenzen",
+      "paper_id": "L06",
+      "title": "Lorenzen lattice meet is idempotent",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Lorenzen.meet"
+      ]
+    },
+    {
+      "id": "lorenzen_meet_comm",
+      "source_path": "tasks/lorenzen_meet_comm.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.lorenzenMeetComm"
+      ],
+      "mission_id": "mission-l06-lorenzen",
+      "paper_id": "L06",
+      "title": "Lorenzen lattice meet is commutative",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Lorenzen.meet"
+      ]
+    },
+    {
+      "id": "lorenzen_le_join_left",
+      "source_path": "tasks/lorenzen_le_join_left.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.lorenzenLeJoinLeft"
+      ],
+      "mission_id": "mission-l06-lorenzen",
+      "paper_id": "L06",
+      "title": "Lorenzen lattice join bounds its left operand",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Lorenzen.LOrder",
+        "TNDLib.Lorenzen.join"
+      ]
+    },
+    {
+      "id": "lorenzen_relprime_symm",
+      "source_path": "tasks/lorenzen_relprime_symm.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.lorenzenRelPrimeSymm"
+      ],
+      "mission_id": "mission-l06-lorenzen",
+      "paper_id": "L06",
+      "title": "Lorenzen relative primality is symmetric",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Lorenzen.RelPrime",
+        "TNDLib.Lorenzen.LOrder"
+      ]
+    },
+    {
+      "id": "cert_match_at_pos0",
+      "source_path": "tasks/cert_match_at_pos0.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.certMatchAtPos0"
+      ],
+      "mission_id": "mission-m01-certifying",
+      "paper_id": "M01",
+      "title": "Length-2 pattern match implies first-symbol agreement at pos",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Certifying.MatchAt2"
+      ]
+    },
+    {
+      "id": "cert_match_at_pos1",
+      "source_path": "tasks/cert_match_at_pos1.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.certMatchAtPos1"
+      ],
+      "mission_id": "mission-m01-certifying",
+      "paper_id": "M01",
+      "title": "Length-2 pattern match implies second-symbol agreement at pos + 1",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Certifying.MatchAt2"
+      ]
+    },
+    {
+      "id": "cert_check_match_sound",
+      "source_path": "tasks/cert_check_match_sound.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.certCheckMatchSound"
+      ],
+      "mission_id": "mission-m01-certifying",
+      "paper_id": "M01",
+      "title": "Executable length-2 pattern matcher is sound for MatchAt2",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Certifying.checkMatchAt2",
+        "TNDLib.Certifying.MatchAt2"
+      ]
+    },
+    {
+      "id": "cert_mismatch_offset0_sound",
+      "source_path": "tasks/cert_mismatch_offset0_sound.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.certMismatchOffset0Sound"
+      ],
+      "mission_id": "mission-m01-certifying",
+      "paper_id": "M01",
+      "title": "Offset-0 mismatch witness refutes MatchAt2",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Certifying.MatchAt2"
+      ]
+    },
+    {
+      "id": "cert_cantor_falsifier",
+      "source_path": "tasks/cert_cantor_falsifier.lean",
+      "namespace_name": "TNDTask",
+      "expected_exports": [
+        "TNDTask.certCantorFalsifier"
+      ],
+      "mission_id": "mission-m01-certifying",
+      "paper_id": "M01",
+      "title": "Cross-mission Cantor diagonal falsifier produces a StreamDiscrepancyCert",
+      "status": "ready",
+      "ownership": "unclaimed",
+      "proof_status": "source-published",
+      "dependencies": [
+        "TNDLib.Certifying.StreamDiscrepancyCert",
+        "TNDLib.Certifying.diagonalStreamCert",
+        "TNDLib.Cantor.diagonal",
+        "TNDLib.Cantor.diagonalDiscrepancy"
+      ]
     }
   ]
 }

@@ -368,10 +368,42 @@ def main() -> int:  # noqa: PLR0915
         print(
             json.dumps({"fixture": "task_admit_into", "passed": True, "result": report["status"]})
         )
+        # Verify closed acyclic import-DAG and unimported-module rejection in policy_for.
+        base_policy = json.loads(admit.POLICY.read_text())
+        unimported_policy = json.loads(json.dumps(base_policy))
+        for sf in unimported_policy["source_files"]:
+            if sf["path"] == "TNDLib.lean":
+                sf["imports"] = [imp for imp in sf["imports"] if imp != "TNDLib.Lorenzen"]
+        try:
+            admit.policy_for(policy_data=unimported_policy)
+        except ValueError as exc:
+            assert "trusted aggregator does not cover every source module" in str(exc), exc
+        else:
+            raise AssertionError("unimported library module in policy was accepted")
+
+        cycle_policy = json.loads(json.dumps(base_policy))
+        for sf in cycle_policy["source_files"]:
+            if sf["path"] == "TNDLib/Cantor.lean":
+                sf["imports"] = ["TNDLib.Certifying"]
+        try:
+            admit.policy_for(policy_data=cycle_policy)
+        except ValueError as exc:
+            assert "library module import cycle detected" in str(exc), exc
+        else:
+            raise AssertionError("cyclic import graph in policy was accepted")
         print(
             json.dumps(
                 {
-                    "passed": len(cases) + len(fs_cases) + len(task_cases) + 2,
+                    "fixture": "import_dag_and_unimported_module_policy",
+                    "passed": True,
+                    "result": "rejected",
+                }
+            )
+        )
+        print(
+            json.dumps(
+                {
+                    "passed": len(cases) + len(fs_cases) + len(task_cases) + 3,
                     "development_only": True,
                 }
             )

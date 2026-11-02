@@ -69,10 +69,15 @@ jobs:
           set -euo pipefail
           uv run --frozen --extra dev python -m gate.state.issue_updates \
             --repo "$REPO" --issue "$ISSUE_NUMBER" quarantine --mark-invalid
-          if [ "$ISSUE_AUTHOR" != "$REPOSITORY_OWNER" ]; then
-            echo 'A public request must be reviewed and republished as an owner-authored task.'
-            exit 1
-          fi
+          uv run --frozen --extra dev python - <<'PY'
+          import os, sys
+          from orchestrator.governance import load_governance
+          repo = os.environ["REPO"]
+          author = os.environ["ISSUE_AUTHOR"]
+          if not load_governance().is_maintainer(author, repo=repo):
+              print("A public request must be reviewed and republished as an owner-authored task.")
+              sys.exit(1)
+          PY
 
       - name: Save issue body to a file
         # Pass the body through an env var rather than substituting it into

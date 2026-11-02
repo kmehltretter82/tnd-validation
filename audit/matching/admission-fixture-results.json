@@ -1,0 +1,888 @@
+{
+  "development_only": true,
+  "profile": "matching-plain-term-v1",
+  "production_parser_sha256": "1dbc991eea861a172d7364fcbf50ac90bb16e638db662be0129ece4bc1d7ef99",
+  "development_parser_sha256": "69090b9ad7267ca5cd312a2d51bf60d1f9a0f6c10670f0bc088cec6c41aa2eb7",
+  "source_policy_sha256": "89441e2691abaa5f8b72112879478906e724c84aaedd2ce31c1d6314c4e4dcd8",
+  "fixture_harness_sha256": "f9df334703b20bc58ed2d33f65c96b443aa7d4607305944b2861235b5323524d",
+  "actual_source": {
+    "development_only": true,
+    "profile": "matching-plain-term-v1",
+    "scope": "matching-pilot-source-only",
+    "source_files": 14,
+    "status": "admitted-source-syntax"
+  },
+  "cases": [
+    {
+      "case": "baseline",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "ordinary_if",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "dependent_if",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "plain_let",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "typed_let",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "explicit_argument",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "named_argument",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "show_from",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "type_ascription",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "substitution",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "instance_inference_term",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "calculation",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "not_equal_not_member_subset",
+      "expected_accepted": true,
+      "report": {
+        "development_only": true,
+        "profile": "matching-plain-term-v1",
+        "scope": "matching-pilot-source-only",
+        "source_files": 1,
+        "status": "admitted-source-syntax"
+      }
+    },
+    {
+      "case": "sorry",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.sorry",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "opaque",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.opaque",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "axiom",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.axiom",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "initialize",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.initialize",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "run_command",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.runCmd",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "macro",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.macro",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "elaborator",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.elab",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "notation",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.notation",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "option_command",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.set_option",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "attribute_command",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.attribute",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "root_declaration",
+      "expected_accepted": false,
+      "report": {
+        "reason": "root-qualified names are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "qualified_declaration",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported declaration identifier",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "early_exit",
+      "expected_accepted": false,
+      "report": {
+        "reason": "invalid command syntax",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "check_command",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.check",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "include_string",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.includeStr",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "eval_percent",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: \u00abterm_%_\u00bb",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "out_param",
+      "expected_accepted": false,
+      "report": {
+        "reason": "reflective/effectful references are outside the admitted subset",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "semi_out_param",
+      "expected_accepted": false,
+      "report": {
+        "reason": "reflective/effectful references are outside the admitted subset",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "quoted_auto_param",
+      "expected_accepted": false,
+      "report": {
+        "reason": "reflective/effectful references are outside the admitted subset",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "constructed_string",
+      "expected_accepted": false,
+      "report": {
+        "reason": "reflective/effectful references are outside the admitted subset",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "unclosed_comment",
+      "expected_accepted": false,
+      "report": {
+        "reason": "invalid command syntax",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "mutual_family",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.mutual",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "nested_constructor",
+      "expected_accepted": false,
+      "report": {
+        "reason": "data declaration differs from reviewed shape",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "class",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.classTk",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "extends",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.extends",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "explicit_constructor",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.structCtor",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "extra_field",
+      "expected_accepted": false,
+      "report": {
+        "reason": "data declaration differs from reviewed shape",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "missing_field",
+      "expected_accepted": false,
+      "report": {
+        "reason": "data declaration differs from reviewed shape",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "duplicate_field",
+      "expected_accepted": false,
+      "report": {
+        "reason": "data declaration differs from reviewed shape",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "changed_field_type",
+      "expected_accepted": false,
+      "report": {
+        "reason": "data declaration differs from reviewed shape",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "pure_field_default",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.binderDefault",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "tactic_field_default",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.binderTactic",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "tactic_field_type",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.byTactic",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "field_attribute",
+      "expected_accepted": false,
+      "report": {
+        "reason": "declaration attributes and modifiers are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "field_private",
+      "expected_accepted": false,
+      "report": {
+        "reason": "declaration attributes and modifiers are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "structure_deriving",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.derivingClass",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "extra_constructor",
+      "expected_accepted": false,
+      "report": {
+        "reason": "data declaration differs from reviewed shape",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "missing_constructor",
+      "expected_accepted": false,
+      "report": {
+        "reason": "data declaration differs from reviewed shape",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "duplicate_constructor",
+      "expected_accepted": false,
+      "report": {
+        "reason": "data declaration differs from reviewed shape",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "recursive_constructor",
+      "expected_accepted": false,
+      "report": {
+        "reason": "data declaration differs from reviewed shape",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "indexed_family",
+      "expected_accepted": false,
+      "report": {
+        "reason": "data declaration differs from reviewed shape",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "constructor_attribute",
+      "expected_accepted": false,
+      "report": {
+        "reason": "declaration attributes and modifiers are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "inductive_deriving",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.derivingClass",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "private_declaration",
+      "expected_accepted": false,
+      "report": {
+        "reason": "declaration attributes and modifiers are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "protected_declaration",
+      "expected_accepted": false,
+      "report": {
+        "reason": "declaration attributes and modifiers are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "unsafe_declaration",
+      "expected_accepted": false,
+      "report": {
+        "reason": "declaration attributes and modifiers are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "partial_declaration",
+      "expected_accepted": false,
+      "report": {
+        "reason": "declaration attributes and modifiers are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "noncomputable_declaration",
+      "expected_accepted": false,
+      "report": {
+        "reason": "declaration attributes and modifiers are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "declaration_attribute",
+      "expected_accepted": false,
+      "report": {
+        "reason": "declaration attributes and modifiers are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "instance",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.instance",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "local_instance",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.instance",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "scoped_instance",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.instance",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "priority_instance",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.instance",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "let_instance",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.letI",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "let_recursive",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.letrec",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "let_pattern",
+      "expected_accepted": false,
+      "report": {
+        "reason": "only plain identifier lets are admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "let_configuration",
+      "expected_accepted": false,
+      "report": {
+        "reason": "only plain identifier lets are admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "attached_where",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.whereDecls",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "termination_annotation",
+      "expected_accepted": false,
+      "report": {
+        "reason": "termination annotations are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "tactic_body",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.byTactic",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "tactic_if_condition",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.byTactic",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "tactic_if_branch",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.byTactic",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "tactic_named_argument",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.byTactic",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "tactic_let_value",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.byTactic",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "tactic_calc_step",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.byTactic",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "effectful_identifier",
+      "expected_accepted": false,
+      "report": {
+        "reason": "reflective/effectful references are outside the admitted subset",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "reflective_under_explicit",
+      "expected_accepted": false,
+      "report": {
+        "reason": "reflective/effectful references are outside the admitted subset",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "reflective_under_show",
+      "expected_accepted": false,
+      "report": {
+        "reason": "reflective/effectful references are outside the admitted subset",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "reflective_under_inference",
+      "expected_accepted": false,
+      "report": {
+        "reason": "reflective/effectful references are outside the admitted subset",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "reflective_under_substitution",
+      "expected_accepted": false,
+      "report": {
+        "reason": "reflective/effectful references are outside the admitted subset",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "root_qualified_identifier",
+      "expected_accepted": false,
+      "report": {
+        "reason": "root-qualified names are not admissible",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "auto_param",
+      "expected_accepted": false,
+      "report": {
+        "reason": "reflective/effectful references are outside the admitted subset",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "string_literal",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: str",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "syntax_quotation",
+      "expected_accepted": false,
+      "report": {
+        "reason": "invalid command syntax",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "do_block",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Term.do",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "extra_declaration",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unapproved or duplicate source declaration",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "duplicate_declaration",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unapproved or duplicate source declaration",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "changed_namespace",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unexpected namespace block",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "nested_namespace",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unexpected namespace block",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "reopened_namespace",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unexpected namespace block",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "missing_namespace_end",
+      "expected_accepted": false,
+      "report": {
+        "reason": "namespace inventory differs from policy",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "lean_import",
+      "expected_accepted": false,
+      "report": {
+        "reason": "reflective/effectful references are outside the admitted subset",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "mathlib_import",
+      "expected_accepted": false,
+      "report": {
+        "reason": "imports differ from approved module inventory",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "unknown_import",
+      "expected_accepted": false,
+      "report": {
+        "reason": "imports differ from approved module inventory",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "duplicate_import",
+      "expected_accepted": false,
+      "report": {
+        "reason": "imports differ from approved module inventory",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "prelude",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Module.prelude",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "late_import",
+      "expected_accepted": false,
+      "report": {
+        "reason": "non-EOI terminal command",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "eval_command",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.eval",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "syntax_extension",
+      "expected_accepted": false,
+      "report": {
+        "reason": "unsupported syntax kind: Lean.Parser.Command.syntax",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "invalid_syntax",
+      "expected_accepted": false,
+      "report": {
+        "reason": "invalid command syntax",
+        "status": "rejected"
+      }
+    },
+    {
+      "case": "deep_syntax",
+      "expected_accepted": false,
+      "report": {
+        "reason": "syntax exceeds maximum nesting depth",
+        "status": "rejected"
+      }
+    }
+  ]
+}

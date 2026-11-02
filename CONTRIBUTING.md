@@ -1,6 +1,6 @@
 # Contributing to tndlib
 
-This guide describes the planned pilot workflow. Certification is disabled while the source-verification boundary is being validated; no public end-to-end contribution has been accepted. Do not assume an open request is ready until the repository owner publishes a separate approved Choir task.
+This guide describes the contributor and agent workflow for `tndlib`. For a concise single-page quickstart tailored to autonomous proving agents, see the **[Agent Entry Guide (`docs/AGENT-GUIDE.md`)](docs/AGENT-GUIDE.md)**. Production certification (`.choir/certification.json`) remains disabled while the native Linux quota boundary is kept fail-closed; merged and replayed proofs carry status `proved-development` until a `production-certified` release is explicitly enabled. Do not assume an open request is ready until the repository owner publishes an approved Choir task registered in `audit/tasks.json`.
 
 ## Before you start
 

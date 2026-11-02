@@ -1,0 +1,629 @@
+{
+  "schema_version": 1,
+  "missions": [
+    {
+      "id": "mission-h01-cantor",
+      "paper_id": "H01",
+      "title": "Cantor's Diagonal Construction and Constructive Non-Surjectivity",
+      "module": "TNDLib/Cantor.lean",
+      "target_scope": "main-theorem-constructive-core",
+      "summary": "Constructive diagonal sequence synthesis on binary streams (Nat → Bool) producing an explicit discrepancy index n for every candidate row enum n.",
+      "reviewed_core": {
+        "definitions": [
+          "TNDLib.Cantor.flip",
+          "TNDLib.Cantor.diagonal",
+          "TNDLib.Cantor.DiscrepancyAt",
+          "TNDLib.Cantor.DiscrepancyWitness"
+        ],
+        "promoted_calibration_theorems": [
+          "TNDLib.Cantor.flip_ne_self",
+          "TNDLib.Cantor.diagonalDiscrepancy",
+          "TNDLib.Cantor.diagonal_differ_at"
+        ]
+      },
+      "calibration_task": {
+        "task_id": "cantor_diagonal_discrepancy",
+        "solution_path": "tests/tasks/cantor_diagonal_discrepancy_solution.lean",
+        "promoted_declaration": "TNDLib.Cantor.diagonalDiscrepancy",
+        "proof_status": "proved-development",
+        "contributor_credit": "tnd-calibration-agent (Mission H01 calibration)"
+      },
+      "open_tasks": [
+        "cantor_flip_involution",
+        "cantor_diagonal_spec",
+        "cantor_discrepancy_ne",
+        "cantor_no_surjection"
+      ],
+      "reused_by_missions": [
+        "mission-m01-certifying"
+      ]
+    },
+    {
+      "id": "mission-l06-lorenzen",
+      "paper_id": "L06",
+      "title": "Lorenzen's Constructive Lattice-Ordered Divisibility Fragment",
+      "module": "TNDLib/Lorenzen.lean",
+      "target_scope": "restricted-constructive-fragment",
+      "summary": "Constructive additive and meet/join order laws from Lorenzen's 1951 investigation of lattice-ordered divisibility cones, including additive order cancellation and relative primality.",
+      "reviewed_core": {
+        "definitions": [
+          "TNDLib.Lorenzen.LOrder",
+          "TNDLib.Lorenzen.meet",
+          "TNDLib.Lorenzen.join",
+          "TNDLib.Lorenzen.RelPrime"
+        ],
+        "promoted_calibration_theorems": [
+          "TNDLib.Lorenzen.orderCancelLeft",
+          "TNDLib.Lorenzen.meet_le_left",
+          "TNDLib.Lorenzen.meet_le_right",
+          "TNDLib.Lorenzen.le_meet"
+        ]
+      },
+      "calibration_task": {
+        "task_id": "lorenzen_order_cancel_left",
+        "solution_path": "tests/tasks/lorenzen_order_cancel_left_solution.lean",
+        "promoted_declaration": "TNDLib.Lorenzen.orderCancelLeft",
+        "proof_status": "proved-development",
+        "contributor_credit": "tnd-calibration-agent (Mission L06 calibration)"
+      },
+      "open_tasks": [
+        "lorenzen_meet_idem",
+        "lorenzen_meet_comm",
+        "lorenzen_le_join_left",
+        "lorenzen_relprime_symm"
+      ],
+      "reused_by_missions": []
+    },
+    {
+      "id": "mission-m01-certifying",
+      "paper_id": "M01",
+      "title": "Certifying Algorithms: String Matching & Non-Occurrence Witness Verification",
+      "module": "TNDLib/Certifying.lean",
+      "target_scope": "restricted-constructive-fragment",
+      "summary": "Executable witness checkers and mismatch/non-occurrence certificates following McConnell-Mehlhorn-Näher-Schweitzer (2011 §2 & §9.5), importing Mission H01's promoted Cantor discrepancy theorem to certify universal pattern-table falsifiers.",
+      "reviewed_core": {
+        "definitions": [
+          "TNDLib.Certifying.MatchAt2",
+          "TNDLib.Certifying.checkMatchAt2",
+          "TNDLib.Certifying.MismatchWitness2",
+          "TNDLib.Certifying.StreamDiscrepancyCert"
+        ],
+        "theorems": [
+          "TNDLib.Certifying.diagonalStreamCert"
+        ]
+      },
+      "cross_mission_imports": [
+        {
+          "from_mission": "mission-h01-cantor",
+          "imported_module": "TNDLib.Cantor",
+          "reused_declarations": [
+            "TNDLib.Cantor.diagonal",
+            "TNDLib.Cantor.DiscrepancyWitness",
+            "TNDLib.Cantor.diagonalDiscrepancy",
+            "TNDLib.Cantor.diagonal_differ_at"
+          ],
+          "consumer_declarations": [
+            "TNDLib.Certifying.StreamDiscrepancyCert",
+            "TNDLib.Certifying.diagonalStreamCert",
+            "TNDTask.certCantorFalsifier"
+          ]
+        }
+      ],
+      "open_tasks": [
+        "cert_match_at_pos0",
+        "cert_match_at_pos1",
+        "cert_check_match_sound",
+        "cert_mismatch_offset0_sound",
+        "cert_cantor_falsifier"
+      ],
+      "reused_by_missions": []
+    }
+  ],
+  "statement_packages": [
+    {
+      "paper_id": "H01",
+      "package_id": "pkg-h01-cantor",
+      "title": "Cantor (1891/1892): Constructive Binary Stream Diagonalization",
+      "lean_path": "TNDLib/Cantor.lean",
+      "readiness_state": "active-mission",
+      "mission_id": "mission-h01-cantor",
+      "target_scope": "main-theorem-constructive-core",
+      "source_citations": [
+        "Cantor (1891 lecture / 1892 volume), pp. 75-76: Binary alphabet (m, w) sequences E_1, E_2, ... and diagonal sequence E_0 = (b_1, b_2, ...).",
+        "Cantor (1891/1892), p. 76: Pointwise discrepancy b_nu != a_{nu, nu} refuting that E_0 is in the enumeration."
+      ],
+      "declarations": [
+        {
+          "name": "TNDLib.Cantor.flip",
+          "kind": "def",
+          "source_ref": "p. 75-76 (choice of b_nu distinct from a_{nu,nu})",
+          "back_translation": "Given a binary symbol b in {false, true}, returns the opposite symbol via constructive Bool recursion."
+        },
+        {
+          "name": "TNDLib.Cantor.diagonal",
+          "kind": "def",
+          "source_ref": "p. 76 (definition of sequence E_0)",
+          "back_translation": "Given an enumeration enum : Nat -> (Nat -> Bool) of binary streams, constructs the diagonal stream n |-> flip (enum n n)."
+        },
+        {
+          "name": "TNDLib.Cantor.DiscrepancyAt",
+          "kind": "def",
+          "source_ref": "p. 76 (coordinate difference at index nu)",
+          "back_translation": "Asserts that binary stream f differs from binary stream g at coordinate n specifically by taking the flipped value f n = flip (g n)."
+        },
+        {
+          "name": "TNDLib.Cantor.DiscrepancyWitness",
+          "kind": "def",
+          "source_ref": "p. 76 (comparison of E_0 with row E_nu at coordinate nu)",
+          "back_translation": "Asserts that candidate stream differs from row enum n at diagonal index n."
+        },
+        {
+          "name": "TNDLib.Cantor.flip_ne_self",
+          "kind": "theorem",
+          "source_ref": "p. 75-76 (mutual exclusivity of m and w)",
+          "back_translation": "For every boolean value b, flip b = b entails a contradiction."
+        },
+        {
+          "name": "TNDLib.Cantor.diagonalDiscrepancy",
+          "kind": "theorem",
+          "source_ref": "p. 76 (main constructive diagonal witness)",
+          "back_translation": "For every enumeration enum and row index n, the diagonal stream satisfies DiscrepancyWitness enum (diagonal enum) n."
+        },
+        {
+          "name": "TNDLib.Cantor.diagonal_differ_at",
+          "kind": "theorem",
+          "source_ref": "p. 76 (E_0 differs from E_nu in the nu-th coordinate)",
+          "back_translation": "For every enumeration enum and index n, diagonal enum n = enum n n is impossible, hence diagonal enum cannot equal row enum n."
+        },
+        {
+          "name": "TNDTask.cantorFlipInvolution",
+          "kind": "open-task-theorem",
+          "source_ref": "p. 75 (two-valued involution of {m, w}; tasks/cantor_flip_involution.lean)",
+          "back_translation": "Open task: Flipping any boolean value twice restores the original boolean value: flip (flip b) = b."
+        }
+      ]
+    },
+    {
+      "paper_id": "L06",
+      "package_id": "pkg-l06-lorenzen",
+      "title": "Lorenzen (1950/1951): Constructive Lattice-Ordered Divisibility Cone Fragment",
+      "lean_path": "TNDLib/Lorenzen.lean",
+      "readiness_state": "active-mission",
+      "mission_id": "mission-l06-lorenzen",
+      "target_scope": "restricted-constructive-fragment",
+      "source_citations": [
+        "Lorenzen (1950 submission / 1951 JSL), §1, pp. 81-83: Preordered abelian divisibility cone, cancellation, and greatest-common-divisor / least-common-multiple lattice operations.",
+        "Lorenzen (1950/1951), §1, pp. 83-86: Constructive meet/join bounds and relative primality (Teilerfremdheit) x <= a -> x <= b -> x <= 0."
+      ],
+      "declarations": [
+        {
+          "name": "TNDLib.Lorenzen.LOrder",
+          "kind": "def",
+          "source_ref": "§1, p. 81 (divisibility preorder a <= b on the positive cone)",
+          "back_translation": "Constructive order relation a <= b on the natural-number divisibility cone."
+        },
+        {
+          "name": "TNDLib.Lorenzen.meet",
+          "kind": "def",
+          "source_ref": "§1, p. 82 (infimum / greatest common divisor a cap b)",
+          "back_translation": "Constructive lattice meet (minimum) of a and b computed by decidable comparison."
+        },
+        {
+          "name": "TNDLib.Lorenzen.join",
+          "kind": "def",
+          "source_ref": "§1, p. 82 (supremum / least common multiple a cup b)",
+          "back_translation": "Constructive lattice join (maximum) of a and b computed by decidable comparison."
+        },
+        {
+          "name": "TNDLib.Lorenzen.RelPrime",
+          "kind": "def",
+          "source_ref": "§1, p. 83 (disjoint / relatively prime elements)",
+          "back_translation": "Elements a and b are relatively prime in the cone order when every common lower bound x of a and b is bounded above by 0."
+        },
+        {
+          "name": "TNDLib.Lorenzen.lorder_of_eq_left",
+          "kind": "theorem",
+          "source_ref": "§1, p. 81 (compatibility of cone order with left equality substitution)",
+          "back_translation": "If x = y and y <= z in the cone order, then x <= z."
+        },
+        {
+          "name": "TNDLib.Lorenzen.lorder_of_eq_right",
+          "kind": "theorem",
+          "source_ref": "§1, p. 81 (compatibility of cone order with right equality substitution)",
+          "back_translation": "If x <= y and z = y in the cone order, then x <= z."
+        },
+        {
+          "name": "TNDLib.Lorenzen.orderCancelLeft",
+          "kind": "theorem",
+          "source_ref": "§1, p. 81 (translation invariance / cancellation of the cone order)",
+          "back_translation": "If c + a <= c + b in the cone order, then a <= b."
+        },
+        {
+          "name": "TNDLib.Lorenzen.meet_le_left",
+          "kind": "theorem",
+          "source_ref": "§1, p. 82 (infimum left lower-bound law)",
+          "back_translation": "The meet of a and b is bounded above by the left operand a."
+        },
+        {
+          "name": "TNDLib.Lorenzen.meet_le_right",
+          "kind": "theorem",
+          "source_ref": "§1, p. 82 (infimum right lower-bound law)",
+          "back_translation": "The meet of a and b is bounded above by the right operand b."
+        },
+        {
+          "name": "TNDLib.Lorenzen.le_meet",
+          "kind": "theorem",
+          "source_ref": "§1, p. 82 (universal greatest-lower-bound property of meet)",
+          "back_translation": "Any element x bounded above by both a and b is bounded above by meet a b."
+        },
+        {
+          "name": "TNDTask.lorenzenMeetIdem",
+          "kind": "open-task-theorem",
+          "source_ref": "§1, p. 82 (idempotence of meet; tasks/lorenzen_meet_idem.lean)",
+          "back_translation": "Open task: For every a, meet a a = a."
+        },
+        {
+          "name": "TNDTask.lorenzenMeetComm",
+          "kind": "open-task-theorem",
+          "source_ref": "§1, p. 82 (commutativity of meet; tasks/lorenzen_meet_comm.lean)",
+          "back_translation": "Open task: For all a and b, meet a b = meet b a."
+        },
+        {
+          "name": "TNDTask.lorenzenLeJoinLeft",
+          "kind": "open-task-theorem",
+          "source_ref": "§1, p. 82 (supremum left upper-bound law; tasks/lorenzen_le_join_left.lean)",
+          "back_translation": "Open task: The left operand a is bounded above by join a b."
+        }
+      ]
+    },
+    {
+      "paper_id": "M01",
+      "package_id": "pkg-m01-certifying",
+      "title": "McConnell-Mehlhorn-Näher-Schweitzer (2010/2011): String Matching & Stream Discrepancy Certificates",
+      "lean_path": "TNDLib/Certifying.lean",
+      "readiness_state": "active-mission",
+      "mission_id": "mission-m01-certifying",
+      "target_scope": "restricted-constructive-fragment",
+      "source_citations": [
+        "McConnell, Mehlhorn, Näher, Schweitzer (2011), §2 (pp. 121-125): Witness predicate W(x, y, w) and executable checker soundness.",
+        "McConnell et al. (2011), §9.5 (pp. 142-143): String matching occurrence verification and explicit mismatch-offset non-occurrence certificates, combined with Mission H01 Cantor diagonal falsifier certificates."
+      ],
+      "declarations": [
+        {
+          "name": "TNDLib.Certifying.MatchAt2",
+          "kind": "def",
+          "source_ref": "§9.5, p. 142 (pattern occurrence specification at position pos)",
+          "back_translation": "Propositional specification that a 2-symbol binary pattern (p0, p1) occurs in stream text at position pos: text pos = p0 and text (pos + 1) = p1."
+        },
+        {
+          "name": "TNDLib.Certifying.checkMatchAt2",
+          "kind": "def",
+          "source_ref": "§9.5, p. 142 (executable occurrence witness checker)",
+          "back_translation": "Executable boolean checker testing whether text pos = p0 and text (pos + 1) = p1."
+        },
+        {
+          "name": "TNDLib.Certifying.MismatchWitness2",
+          "kind": "def",
+          "source_ref": "§9.5, p. 142-143 (mismatch offset certificate for non-occurrence)",
+          "back_translation": "Explicit certificate that pattern (p0, p1) fails to match text at position pos because either offset 0 disagrees (text pos != p0) or offset 1 disagrees (text (pos + 1) != p1)."
+        },
+        {
+          "name": "TNDLib.Certifying.StreamDiscrepancyCert",
+          "kind": "def",
+          "source_ref": "§2, p. 122 + Cantor (1891) p. 76 (cross-mission universal table falsifier witness)",
+          "back_translation": "Certificate that candidate stream differs from row n of a pattern table at diagonal index n, defined via TNDLib.Cantor.DiscrepancyWitness."
+        },
+        {
+          "name": "TNDLib.Certifying.diagonalStreamCert",
+          "kind": "theorem",
+          "source_ref": "§2.1, p. 122 + Cantor (1891) p. 76 (universal falsifier certificate constructor)",
+          "back_translation": "For any infinite table of binary patterns and any row index n, Cantor's diagonal stream produces a valid StreamDiscrepancyCert at row n."
+        },
+        {
+          "name": "TNDTask.certCheckMatchSound",
+          "kind": "open-task-theorem",
+          "source_ref": "§2.1, p. 122 & §9.5, p. 142 (checker soundness property; tasks/cert_check_match_sound.lean)",
+          "back_translation": "Open task: If the executable checker checkMatchAt2 text p0 p1 pos returns true, then MatchAt2 text p0 p1 pos holds."
+        }
+      ]
+    },
+    {
+      "paper_id": "M02",
+      "package_id": "pkg-m02-shockhash",
+      "title": "Lehmann-Sanders-Walzer (2023/2025): ShockHash Two-Choice & Pseudoforest Orientation Certificates",
+      "lean_path": "tests/packages/M02_ShockHash.lean",
+      "readiness_state": "statement-mapped-package",
+      "mission_id": null,
+      "target_scope": "restricted-constructive-fragment",
+      "source_citations": [
+        "Lehmann, Sanders, Walzer (2023 arXiv / 2025 Algorithmica), §2-§3 (pp. 430-436): Each key i in {0,...,n-1} has two candidate hash slots h_0(i), h_1(i); a 1-bit selector vector s in {0,1}^n chooses a slot for each key.",
+        "Lehmann, Sanders, Walzer (2025), §3.1 (pp. 432-435): Viewing candidate pairs as edges of a bipartite/cuckoo graph, a valid Minimal Perfect Hash Function corresponds to a 1-orientation (pseudoforest orientation where every target slot receives in-degree at most 1)."
+      ],
+      "declarations": [
+        {
+          "name": "TNDPackage.M02ShockHash.TwoChoiceHash",
+          "kind": "structure",
+          "source_ref": "§2, p. 430 (pair of candidate hash functions h_0, h_1 : [n] -> [m])",
+          "back_translation": "A finite two-choice hash table specification mapping each of n keys to two candidate slots h0 i and h1 i in Fin m."
+        },
+        {
+          "name": "TNDPackage.M02ShockHash.SelectorBits",
+          "kind": "def",
+          "source_ref": "§3, p. 432 (1-bit choice vector in {0,1}^n)",
+          "back_translation": "A boolean selector function Fin n -> Bool choosing between h0 (false) and h1 (true) for each key."
+        },
+        {
+          "name": "TNDPackage.M02ShockHash.selectedSlot",
+          "kind": "def",
+          "source_ref": "§3, p. 432 (evaluated hash slot h_{s(i)}(i))",
+          "back_translation": "Evaluates the chosen slot in Fin m for key i under two-choice hash H and selector bit s i."
+        },
+        {
+          "name": "TNDPackage.M02ShockHash.CollisionFree",
+          "kind": "def",
+          "source_ref": "§2, p. 430 (injectivity / collision freedom of selected slots)",
+          "back_translation": "Asserts that for all keys i and j, if selectedSlot H s i = selectedSlot H s j, then i = j."
+        },
+        {
+          "name": "TNDPackage.M02ShockHash.PseudoforestOrientationCert",
+          "kind": "structure",
+          "source_ref": "§3.1, p. 433 (cuckoo graph 1-orientation certificate)",
+          "back_translation": "Certificate bundling a selector bit-vector s, a reverse slot-owner map slotOwner : Fin m -> Option (Fin n), and the witness law that every key i is recorded as the unique owner of its selected slot."
+        },
+        {
+          "name": "TNDPackage.M02ShockHash.orientation_cert_implies_collision_free",
+          "kind": "theorem",
+          "source_ref": "§3.1, p. 433 (bijection/injectivity from valid pseudoforest orientation)",
+          "back_translation": "Proved theorem: Any TwoChoiceHash equipped with a valid PseudoforestOrientationCert is collision-free (injective on Fin n)."
+        },
+        {
+          "name": "TNDPackage.M02ShockHash.CollisionFreePair2",
+          "kind": "def",
+          "source_ref": "§3, p. 432 (2-key disjoint slot verification)",
+          "back_translation": "Specializes collision freedom to two keys with selected slots slot0 and slot1, asserting slot0 != slot1."
+        }
+      ]
+    },
+    {
+      "paper_id": "L01",
+      "package_id": "pkg-l01-schoenfinkel",
+      "title": "Schönfinkel (1920/1924): Typed Combinators I, C, T, Z, S and Reductions to C and S",
+      "lean_path": "tests/packages/L01_Schoenfinkel.lean",
+      "readiness_state": "statement-mapped-package",
+      "mission_id": null,
+      "target_scope": "restricted-constructive-fragment",
+      "source_citations": [
+        "Schönfinkel (1920 lecture / 1924 Math. Ann.), §2, p. 306: Representation of multi-argument functions by single-argument higher-order functions (currying/uncurrying).",
+        "Schönfinkel (1924), §3, pp. 308-310: Definitions of Identitätsfunktion I, Konstanzfunktion C (modern K), Vertauschungsfunktion T (modern C), Zusammensetzungsfunktion Z (modern B), and Verschmelzungsfunktion S.",
+        "Schönfinkel (1924), §4, pp. 311-312: Reduction of I = S C C, Z = S (C S) C, and T = S (Z Z S) (C C) to C and S alone."
+      ],
+      "declarations": [
+        {
+          "name": "TNDPackage.L01Schoenfinkel.curry",
+          "kind": "def",
+          "source_ref": "§2, p. 306 (reduction of binary function f(x, y) to unary function-valued function)",
+          "back_translation": "Transforms a function on pairs (alpha x beta) -> gamma into a curried function alpha -> beta -> gamma."
+        },
+        {
+          "name": "TNDPackage.L01Schoenfinkel.uncurry",
+          "kind": "def",
+          "source_ref": "§2, p. 306 (inverse passage from unary higher-order function to binary function)",
+          "back_translation": "Transforms a curried function alpha -> beta -> gamma into a function on pairs (alpha x beta) -> gamma."
+        },
+        {
+          "name": "TNDPackage.L01Schoenfinkel.combI",
+          "kind": "def",
+          "source_ref": "§3, p. 308, eq. (1): I x = x",
+          "back_translation": "Schönfinkel's identity combinator I : alpha -> alpha."
+        },
+        {
+          "name": "TNDPackage.L01Schoenfinkel.combC",
+          "kind": "def",
+          "source_ref": "§3, p. 309, eq. (2): (C x) y = x (modern K combinator)",
+          "back_translation": "Schönfinkel's constancy combinator C : alpha -> beta -> alpha returning its first argument."
+        },
+        {
+          "name": "TNDPackage.L01Schoenfinkel.combT",
+          "kind": "def",
+          "source_ref": "§3, p. 309, eq. (3): (T f) x y = f y x (modern C combinator)",
+          "back_translation": "Schönfinkel's argument-swapping combinator (Vertauschungsfunktion) T."
+        },
+        {
+          "name": "TNDPackage.L01Schoenfinkel.combZ",
+          "kind": "def",
+          "source_ref": "§3, p. 310, eq. (4): Z f g x = f (g x) (modern B combinator)",
+          "back_translation": "Schönfinkel's composition combinator (Zusammensetzungsfunktion) Z."
+        },
+        {
+          "name": "TNDPackage.L01Schoenfinkel.combS",
+          "kind": "def",
+          "source_ref": "§3, p. 310, eq. (5): S f g x = (f x) (g x)",
+          "back_translation": "Schönfinkel's fusion combinator (Verschmelzungsfunktion) S."
+        },
+        {
+          "name": "TNDPackage.L01Schoenfinkel.schoenfinkel_I_from_CS",
+          "kind": "theorem",
+          "source_ref": "§4, p. 311: I x = (S C C) x",
+          "back_translation": "Proved theorem: Evaluating S C C on any argument x yields I x = x."
+        },
+        {
+          "name": "TNDPackage.L01Schoenfinkel.schoenfinkel_Z_from_CS",
+          "kind": "theorem",
+          "source_ref": "§4, p. 311: Z = S (C S) C",
+          "back_translation": "Proved theorem: Pointwise reduction of composition Z f g x to S (C S) C f g x."
+        },
+        {
+          "name": "TNDPackage.L01Schoenfinkel.schoenfinkel_T_from_CSZ",
+          "kind": "theorem",
+          "source_ref": "§4, p. 312: T = S (Z Z S) (C C)",
+          "back_translation": "Proved theorem: Pointwise reduction of swap T f x y to S (Z Z S) (C C) f x y."
+        }
+      ]
+    },
+    {
+      "paper_id": "L03",
+      "package_id": "pkg-l03-ackermann",
+      "title": "Ackermann (1927/1928): Original 3-Variable Hierarchy phi(a, b, n)",
+      "lean_path": "tests/packages/L03_Ackermann.lean",
+      "readiness_state": "statement-mapped-package",
+      "mission_id": null,
+      "target_scope": "restricted-constructive-fragment",
+      "source_citations": [
+        "Ackermann (1927 submission / 1928 Math. Ann.), pp. 119-120: Initial value function alpha(a, n) = 0 (n=0), 1 (n=1), a (n>=2) and 3-variable recursion phi(a, b, n).",
+        "Ackermann (1928), p. 119: Explicit level-0 (a + b), level-1 (a * b), and level-2 (iterated multiplication with base a at b=0) characterizations."
+      ],
+      "declarations": [
+        {
+          "name": "TNDPackage.L03Ackermann.ackAlpha",
+          "kind": "def",
+          "source_ref": "p. 120 (initial value function alpha(a, n))",
+          "back_translation": "Ackermann's base-value helper: returns 0 when n = 0, 1 when n = 1, and a when n >= 2."
+        },
+        {
+          "name": "TNDPackage.L03Ackermann.ackPhi",
+          "kind": "def",
+          "source_ref": "p. 120 (simultaneous recursion for phi(a, b, n))",
+          "back_translation": "Ackermann's original 3-argument hierarchy phi(a, b, n): at level 0 returns a + b; at level n + 1 returns ackAlpha a n when b = 0 and ackPhi a (ackPhi a b' n + 1) n when b = b' + 1."
+        },
+        {
+          "name": "TNDPackage.L03Ackermann.ackPhi_level0",
+          "kind": "theorem",
+          "source_ref": "p. 119, eq. (1): phi(a, b, 0) = a + b",
+          "back_translation": "Proved theorem: At level n = 0, Ackermann's phi(a, b, 0) equals a + b."
+        },
+        {
+          "name": "TNDPackage.L03Ackermann.ackPhi_level1_zero",
+          "kind": "theorem",
+          "source_ref": "p. 119: phi(a, 0, 1) = 0",
+          "back_translation": "Proved theorem: At level n = 1 and b = 0, phi(a, 0, 1) = 0."
+        },
+        {
+          "name": "TNDPackage.L03Ackermann.ackPhi_level2_zero",
+          "kind": "theorem",
+          "source_ref": "p. 120: phi(a, 0, 2) = alpha(a, 1) = 1",
+          "back_translation": "Proved theorem: At level n = 2 and b = 0, phi(a, 0, 2) = 1."
+        },
+        {
+          "name": "TNDPackage.L03Ackermann.ackPhi_level3_zero",
+          "kind": "theorem",
+          "source_ref": "p. 120: phi(a, 0, 3) = alpha(a, 2) = a",
+          "back_translation": "Proved theorem: At level n = 3 and b = 0, phi(a, 0, 3) = a, capturing Ackermann's non-standard base convention for n >= 3."
+        },
+        {
+          "name": "TNDPackage.L03Ackermann.AckLevel1Spec",
+          "kind": "def",
+          "source_ref": "p. 119: phi(a, b, 1) = a * b",
+          "back_translation": "Target specification stating that phi(a, b, 1) equals the product a * b for all a, b."
+        }
+      ]
+    },
+    {
+      "paper_id": "H08",
+      "package_id": "pkg-h08-perron-moessner",
+      "title": "Perron (1951/1952): Proof of Moessner's Theorem via Prefix Sums and Binomial Coefficients",
+      "lean_path": "tests/packages/H08_PerronMoessner.lean",
+      "readiness_state": "statement-mapped-package",
+      "mission_id": null,
+      "target_scope": "main-theorem-constructive-core",
+      "source_citations": [
+        "Perron (1951 lecture / 1952 BadW Sitzungsberichte), pp. 31-32: Definition of Moessner's sieve by dropping every k-th term and forming partial sums.",
+        "Perron (1951/1952), pp. 32-34: Binomial-coefficient representation of intermediate rows and derivation of k-th powers n^k."
+      ],
+      "declarations": [
+        {
+          "name": "TNDPackage.H08PerronMoessner.prefixSum",
+          "kind": "def",
+          "source_ref": "p. 31 (partial sum operator on sequence terms)",
+          "back_translation": "Computes the partial sum f 0 + f 1 + ... + f (n - 1) of a natural-number sequence."
+        },
+        {
+          "name": "TNDPackage.H08PerronMoessner.oddTerm",
+          "kind": "def",
+          "source_ref": "p. 31 (sequence 1, 3, 5, ... remaining after deleting every 2nd positive integer)",
+          "back_translation": "Returns the k-th odd positive integer 2 * k + 1 (0-indexed)."
+        },
+        {
+          "name": "TNDPackage.H08PerronMoessner.binom",
+          "kind": "def",
+          "source_ref": "p. 32 (Pascal binomial coefficients used in Perron's induction)",
+          "back_translation": "Standard recursive definition of binomial coefficient C(n, k) on Nat."
+        },
+        {
+          "name": "TNDPackage.H08PerronMoessner.pascal_step",
+          "kind": "theorem",
+          "source_ref": "p. 32 (Pascal recurrence C(n+1, k+1) = C(n, k) + C(n, k+1))",
+          "back_translation": "Proved theorem: Binomial coefficients satisfy Pascal's additive recurrence."
+        },
+        {
+          "name": "TNDPackage.H08PerronMoessner.moessner_rank2_step",
+          "kind": "theorem",
+          "source_ref": "p. 31 (rank-2 Moessner step: prefix sum of odd numbers steps by 2n + 1)",
+          "back_translation": "Proved theorem: prefixSum oddTerm (n + 1) = prefixSum oddTerm n + (2 * n + 1)."
+        },
+        {
+          "name": "TNDPackage.H08PerronMoessner.MoessnerRank2Squares",
+          "kind": "def",
+          "source_ref": "p. 31 (rank-2 case of Moessner's theorem: sum of first n odd numbers is n^2)",
+          "back_translation": "Target specification that prefixSum oddTerm n = n * n for all n."
+        }
+      ]
+    },
+    {
+      "paper_id": "H03",
+      "package_id": "pkg-h03-sperner",
+      "title": "Sperner (1927/1928): Subset Antichains and Middle Binomial Coefficient Bound",
+      "lean_path": "tests/packages/H03_Sperner.lean",
+      "readiness_state": "statement-mapped-package",
+      "mission_id": null,
+      "target_scope": "main-theorem-constructive-core",
+      "source_citations": [
+        "Sperner (1927 submission / 1928 Math. Z.), p. 544: System of subsets of an n-element set in which no subset contains another (antichain) has cardinality at most C(n, floor(n/2)).",
+        "Sperner (1928), pp. 545-546: Layer shift / shade construction and binomial bound."
+      ],
+      "declarations": [
+        {
+          "name": "TNDPackage.H03Sperner.BitSubset",
+          "kind": "def",
+          "source_ref": "p. 544 (subset of an n-element ground set)",
+          "back_translation": "Represents a subset of {0, ..., n - 1} by its characteristic function Fin n -> Bool."
+        },
+        {
+          "name": "TNDPackage.H03Sperner.SubsetLe",
+          "kind": "def",
+          "source_ref": "p. 544 (subset inclusion A subseteq B)",
+          "back_translation": "Pointwise inclusion of bitvector subsets: every element i with A i = true also satisfies B i = true."
+        },
+        {
+          "name": "TNDPackage.H03Sperner.Incomparable",
+          "kind": "def",
+          "source_ref": "p. 544 (neither subset is contained in the other)",
+          "back_translation": "Two subsets A and B are incomparable when neither A subseteq B nor B subseteq A holds."
+        },
+        {
+          "name": "TNDPackage.H03Sperner.PairwiseAntichain",
+          "kind": "def",
+          "source_ref": "p. 544 (Sperner family / antichain condition)",
+          "back_translation": "Inductive predicate asserting that a list of subsets has all distinct pairs incomparable (which also forces duplicate-freedom)."
+        },
+        {
+          "name": "TNDPackage.H03Sperner.middleBinom",
+          "kind": "def",
+          "source_ref": "p. 544 (middle binomial coefficient C(n, floor(n/2)))",
+          "back_translation": "Computes the middle binomial coefficient C(n, n / 2)."
+        },
+        {
+          "name": "TNDPackage.H03Sperner.SpernerBoundSpec",
+          "kind": "def",
+          "source_ref": "p. 544, Satz (main upper bound |F| <= C(n, floor(n/2)))",
+          "back_translation": "Target specification: For every list F of subsets of Fin n satisfying PairwiseAntichain F, F.length <= middleBinom n."
+        },
+        {
+          "name": "TNDPackage.H03Sperner.singleton_antichain_bound",
+          "kind": "theorem",
+          "source_ref": "p. 544 (non-vacuity and base-case verification for singleton families)",
+          "back_translation": "Proved theorem: Any 1-element family [A] is a valid PairwiseAntichain and satisfies [A].length <= middleBinom n."
+        }
+      ]
+    }
+  ]
+}

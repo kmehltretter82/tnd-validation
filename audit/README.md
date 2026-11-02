@@ -72,7 +72,7 @@ run from a clean base checkout with both Git commits locally available:
 ```sh
 python3 audit/run.py --repo . --base BASE_SHA --head HEAD_SHA \
   --quota-parent /canonical/trusted/scratch \
-  --output audit/output/audit.json
+  --output /tmp/tnd-audit-report.json
 ```
 
 Before any proof workflow fetches its candidate commit, the maintained
@@ -219,13 +219,16 @@ that their source was built in the production isolation boundary.
 
 ## Open tasks and promotion
 
-`tasks.json` is a maintainer-approved registry. The current admission policy
-supports the registered `map_exists` task only. A task file imports `TNDLib` and
-declares its approved statement in `TNDTask`; it is excluded from library
-imports and may initially contain `sorry`. A proof PR fills that file. Changed
+`tasks.json` is a maintainer-approved registry covering the starter task
+(`map_exists`) and the reviewed German/DACH mission tasks across `H01` (Cantor),
+`L06` (Lorenzen), and `M01` (Certifying Algorithms). A task file imports `TNDLib`
+and declares its approved statement in `TNDTask`; it is excluded from library
+imports and initially contains `sorry`. A proof PR fills that file. Changed
 task files are independently checked against the base statement in a separate
 temporary module. Unregistered task edits fail. Results appear under `tasks`
-with status `verified-task-proof`, not in the certified library result list.
+with status `verified-task-proof` (`proved-development` while
+`.choir/certification.json` remains disabled), distinct from `source-published`
+unproved challenges and `production-certified` release evidence.
 
 A maintainer promotes an accepted task by adding its proof under `TNDLib`,
 updating the approved export inventory and source mapping, and running the full

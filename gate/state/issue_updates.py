@@ -19,6 +19,7 @@ from typing import Any
 
 from gate.state.intake import ParseSuccess, parse_issue_body
 from gate.state.intake_cli import record_hash
+from orchestrator.governance import GovernanceError, load_governance
 
 MAX_GH_OUTPUT = 2 * 1024 * 1024
 MAX_COMMENTS = 10_000
@@ -358,12 +359,19 @@ def _intake_binding_changed(
     )
 
 
+def _is_authorized_task_author(author: str, repo: str) -> bool:
+    try:
+        return load_governance().is_maintainer(author, repo=repo)
+    except GovernanceError:
+        return author.casefold() == repo.split("/", 1)[0].casefold()
+
+
 def apply_intake(repo: str, number: int, result_path: Path, body_path: Path) -> None:
     """Apply a validated intake payload and verify labels/comment postconditions."""
     _validate_repo_issue(repo, number)
     payload = _read_intake_payload(result_path)
     issue = _issue(repo, number)
-    if issue.author.casefold() != repo.split("/", 1)[0].casefold():
+    if not _is_authorized_task_author(issue.author, repo):
         raise IssueUpdateError("intake target is not owner-authored")
     validated_body = _read_body(body_path)
     if issue.body != validated_body:
@@ -391,10 +399,9 @@ def complete_task(repo: str, number: int, pr: int) -> None:
     if isinstance(pr, bool) or pr < 1:
         raise IssueUpdateError("invalid pull-request number")
     issue = _issue(repo, number)
-    owner = repo.split("/", 1)[0]
     parsed = parse_issue_body(issue.body, expected_repo=repo)
     if (
-        issue.author.casefold() != owner.casefold()
+        not _is_authorized_task_author(issue.author, repo)
         or "choir/task" not in issue.labels
         or not isinstance(parsed, ParseSuccess)
         or not parsed.record.target_file

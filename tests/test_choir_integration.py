@@ -631,7 +631,7 @@ def test_maintainer_regression_never_executes_fork_or_manual_branch_code():
     assert checkout_step["with"] == {
         "ref": "${{ github.event_name == 'pull_request' && "
                "github.event.pull_request.head.sha || github.sha }}",
-        "fetch-depth": 1,
+        "fetch-depth": 0,
         "fetch-tags": False,
         "persist-credentials": False,
     }

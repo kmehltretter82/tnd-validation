@@ -11,7 +11,9 @@
         "TNDLib.List",
         "TNDLib.Finite",
         "TNDLib.Algebra",
-        "TNDLib.Existential"
+        "TNDLib.Cantor",
+        "TNDLib.Lorenzen",
+        "TNDLib.Certifying"
       ],
       "declarations": [],
       "universes": []
@@ -111,19 +113,59 @@
       "universes": []
     },
     {
-      "path": "TNDLib/Existential.lean",
-      "module_name": "TNDLib.Existential",
-      "namespace_name": "TNDLib.Existential",
+      "path": "TNDLib/Cantor.lean",
+      "module_name": "TNDLib.Cantor",
+      "namespace_name": "TNDLib.Cantor",
       "imports": [
         "Init"
       ],
       "declarations": [
-        "TNDLib.Existential.mapExists"
+        "TNDLib.Cantor.flip",
+        "TNDLib.Cantor.diagonal",
+        "TNDLib.Cantor.DiscrepancyAt",
+        "TNDLib.Cantor.DiscrepancyWitness",
+        "TNDLib.Cantor.flip_ne_self",
+        "TNDLib.Cantor.diagonalDiscrepancy",
+        "TNDLib.Cantor.diagonal_differ_at"
       ],
-      "universes": [
-        "u",
-        "v"
-      ]
+      "universes": []
+    },
+    {
+      "path": "TNDLib/Lorenzen.lean",
+      "module_name": "TNDLib.Lorenzen",
+      "namespace_name": "TNDLib.Lorenzen",
+      "imports": [
+        "Init"
+      ],
+      "declarations": [
+        "TNDLib.Lorenzen.LOrder",
+        "TNDLib.Lorenzen.meet",
+        "TNDLib.Lorenzen.join",
+        "TNDLib.Lorenzen.RelPrime",
+        "TNDLib.Lorenzen.orderCancelLeft",
+        "TNDLib.Lorenzen.lorder_of_eq_left",
+        "TNDLib.Lorenzen.lorder_of_eq_right",
+        "TNDLib.Lorenzen.meet_le_left",
+        "TNDLib.Lorenzen.meet_le_right",
+        "TNDLib.Lorenzen.le_meet"
+      ],
+      "universes": []
+    },
+    {
+      "path": "TNDLib/Certifying.lean",
+      "module_name": "TNDLib.Certifying",
+      "namespace_name": "TNDLib.Certifying",
+      "imports": [
+        "TNDLib.Cantor"
+      ],
+      "declarations": [
+        "TNDLib.Certifying.MatchAt2",
+        "TNDLib.Certifying.checkMatchAt2",
+        "TNDLib.Certifying.MismatchWitness2",
+        "TNDLib.Certifying.StreamDiscrepancyCert",
+        "TNDLib.Certifying.diagonalStreamCert"
+      ],
+      "universes": []
     }
   ],
   "task_files": [
@@ -238,6 +280,201 @@
       ],
       "universes": [],
       "challenge_sha256": "3d279313e0880872be703f91140ae7a519e871d08ce545e9443f5b73ad36c614"
+    },
+    {
+      "id": "cantor_flip_involution",
+      "source_path": "tasks/cantor_flip_involution.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.cantorFlipInvolution"
+      ],
+      "universes": [],
+      "challenge_sha256": "3b2e5a357f1bae7a72a9237c7b53cd81d8afedaf24ac4d89bb5e363ad26e3232"
+    },
+    {
+      "id": "cantor_diagonal_spec",
+      "source_path": "tasks/cantor_diagonal_spec.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.cantorDiagonalSpec"
+      ],
+      "universes": [],
+      "challenge_sha256": "483941698938ab328852983778ea4c3532b08893c6d24ef65363021c27233858"
+    },
+    {
+      "id": "cantor_discrepancy_ne",
+      "source_path": "tasks/cantor_discrepancy_ne.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.cantorDiscrepancyNe"
+      ],
+      "universes": [],
+      "challenge_sha256": "3596ffeb930d68ed14c648ca39e6be6b1b85a1f8a6cda2a085b22c32328d546a"
+    },
+    {
+      "id": "cantor_no_surjection",
+      "source_path": "tasks/cantor_no_surjection.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.cantorNoSurjection"
+      ],
+      "universes": [],
+      "challenge_sha256": "973b5ea36c7f914032393b04d7ee3d903821bdcf816f524334b31aa0d16e3423"
+    },
+    {
+      "id": "lorenzen_meet_idem",
+      "source_path": "tasks/lorenzen_meet_idem.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.lorenzenMeetIdem"
+      ],
+      "universes": [],
+      "challenge_sha256": "2a7bd41914433e98fa4ac7ca11bb324fc83fe8b05f2e7e061a58c7659facb709"
+    },
+    {
+      "id": "lorenzen_meet_comm",
+      "source_path": "tasks/lorenzen_meet_comm.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.lorenzenMeetComm"
+      ],
+      "universes": [],
+      "challenge_sha256": "036e0ddb8dca23b958f19ddf21e9c175d1925354a1a45d79a4af2d0d69fff461"
+    },
+    {
+      "id": "lorenzen_le_join_left",
+      "source_path": "tasks/lorenzen_le_join_left.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.lorenzenLeJoinLeft"
+      ],
+      "universes": [],
+      "challenge_sha256": "8c5a8d8d4ccdce21c76171dc7f25994fe5a43fecb50de9e9cb6d73ca03576485"
+    },
+    {
+      "id": "lorenzen_relprime_symm",
+      "source_path": "tasks/lorenzen_relprime_symm.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.lorenzenRelPrimeSymm"
+      ],
+      "universes": [],
+      "challenge_sha256": "f7fc026cb1d74de69d5c5937010a5ae450c299d100dd280ed0a646319fb6b77d"
+    },
+    {
+      "id": "cert_match_at_pos0",
+      "source_path": "tasks/cert_match_at_pos0.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.certMatchAtPos0"
+      ],
+      "universes": [],
+      "challenge_sha256": "1bbe03b32a27079cc0ac28b612da04ee17b603ed9f10c7420278e58373f147cf"
+    },
+    {
+      "id": "cert_match_at_pos1",
+      "source_path": "tasks/cert_match_at_pos1.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.certMatchAtPos1"
+      ],
+      "universes": [],
+      "challenge_sha256": "32ce40347f8392b256f32ce7949390e2b2952a4ca24366c0f562f7aad61abec4"
+    },
+    {
+      "id": "cert_check_match_sound",
+      "source_path": "tasks/cert_check_match_sound.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.certCheckMatchSound"
+      ],
+      "universes": [],
+      "challenge_sha256": "f152f4738380488d9c7e4bc131895df380f8b9c59abb7f187f1a17baf582421f"
+    },
+    {
+      "id": "cert_mismatch_offset0_sound",
+      "source_path": "tasks/cert_mismatch_offset0_sound.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.certMismatchOffset0Sound"
+      ],
+      "universes": [],
+      "challenge_sha256": "47b0669b6e8e01b71ee564fc7eb1e640faa5617d8ced0512393e8df3a88ffe31"
+    },
+    {
+      "id": "cert_cantor_falsifier",
+      "source_path": "tasks/cert_cantor_falsifier.lean",
+      "path": "Task.lean",
+      "module_name": "Task",
+      "namespace_name": "TNDTask",
+      "imports": [
+        "TNDLib"
+      ],
+      "declarations": [
+        "TNDTask.certCantorFalsifier"
+      ],
+      "universes": [],
+      "challenge_sha256": "e754c7216c300bc71f6fa824e7f1c24a5f0e40584ce6c3b808877b7b65143136"
     }
   ]
 }

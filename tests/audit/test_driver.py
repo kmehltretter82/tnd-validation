@@ -788,6 +788,39 @@ class DriverBoundaryTests(unittest.TestCase):
             self.assertEqual(report["source_sha256"], seen["expected_hashes"])
             self.assertTrue((source / "lake-manifest.json").is_file())
 
+    def test_maintainer_pr_marker_and_manifest_validation(self):
+        base, head = "a" * 40, "b" * 40
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / ".git").mkdir()
+            self.assertFalse(runner._is_maintainer_pr(root, base, head))
+            (root / ".git/tnd-maintainer-pr.json").write_text(
+                json.dumps({"mode": "maintainer", "pr": 12, "base_sha": base, "head_sha": head})
+            )
+            self.assertTrue(runner._is_maintainer_pr(root, base, head))
+            self.assertFalse(runner._is_maintainer_pr(root, head, head))
+            with self.assertRaisesRegex(ValueError, "invalid maintainer PR marker"):
+                runner._is_maintainer_pr(root, base, "c" * 40)
+
+            project = Path(__file__).parents[2]
+            policy_path = project / "audit/admission/policy.json"
+            blobs = {
+                "audit/admission/policy.json": policy_path.read_bytes(),
+                "audit/exports.json": (project / "audit/exports.json").read_bytes(),
+                "audit/tasks.json": (project / "audit/tasks.json").read_bytes(),
+            }
+            with patch.object(runner, "_git_blob", side_effect=lambda _r, _rev, p: blobs[p]):
+                policy, policy_bytes, inventory, exports_bytes, registry = (
+                    runner._load_validated_maintainer_manifests(root, head)
+                )
+            # This is the source-admission policy, not certification.json;
+            # its maintained schema has source_files/tasks and no version key.
+            self.assertEqual(policy, json.loads(blobs["audit/admission/policy.json"]))
+            self.assertEqual(policy_bytes, blobs["audit/admission/policy.json"])
+            self.assertEqual(exports_bytes, blobs["audit/exports.json"])
+            self.assertTrue(inventory["expected_exports"])
+            self.assertTrue(registry["tasks"])
+
 
 VALIDATED_POLICY = {
     "schema_version": 1,

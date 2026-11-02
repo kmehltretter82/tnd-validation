@@ -1,0 +1,653 @@
+{
+  "schema_version": 1,
+  "papers": [
+    {
+      "id": "H01",
+      "category": "historical-foundational",
+      "title": "Ueber eine elementare Frage der Mannigfaltigkeitslehre",
+      "authors": [
+        "Georg Cantor"
+      ],
+      "year_lecture_or_submission": "1891",
+      "year_published": "1892",
+      "date_reconciliation": "Presented at the September 1891 Halle DMV meeting (Jahresbericht volume 1 for 1890/91, printed 1892, pp. 75-78).",
+      "venue": "Jahresbericht der Deutschen Mathematiker-Vereinigung 1, 75-78",
+      "dach_connection": {
+        "institutions": [
+          "Martin-Luther-Universität Halle-Wittenberg",
+          "Deutsche Mathematiker-Vereinigung (DMV)"
+        ],
+        "location": "Halle (Saale), Germany",
+        "period": "1869-1918 (paper presented 1891)"
+      },
+      "primary_source_url": "https://gdz.sub.uni-goettingen.de/id/PPN37721857X_0001",
+      "source_provenance_status": "verified-public-scan-and-transcription",
+      "target_scope": "main-theorem-constructive-core",
+      "target_scope_note": "Pointwise diagonal discrepancy witness and constructive refutation of surjectivity for enumerations Nat -> (Nat -> Bool).",
+      "constructive_status": "intuitionistically-valid",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Law of Excluded Middle (on infinite equality via explicit Bool flip)"
+      ],
+      "existing_lean_formalization_check": "Mathlib has Function.cantor_injective/surjective using Classical/Set; TNDLib formalizes the dependency-free constructive Bool-sequence witness in Init.",
+      "readiness_state": "active-mission",
+      "mission_id": "mission-h01-cantor",
+      "package_path": "TNDLib/Cantor.lean"
+    },
+    {
+      "id": "H02",
+      "category": "historical-foundational",
+      "title": "Über die Kongruenz x^m + y^m ≡ z^m (mod. p)",
+      "authors": [
+        "Issai Schur"
+      ],
+      "year_lecture_or_submission": "1916",
+      "year_published": "1917",
+      "date_reconciliation": "Dated Berlin 1916 and conventionally cited as 1916; published in Jahresbericht der Deutschen Mathematiker-Vereinigung volume 25, imprint 1917, pp. 114-117.",
+      "venue": "Jahresbericht der Deutschen Mathematiker-Vereinigung 25, 114-117",
+      "dach_connection": {
+        "institutions": [
+          "Friedrich-Wilhelms-Universität Berlin (now Humboldt-Universität zu Berlin)"
+        ],
+        "location": "Berlin, Germany",
+        "period": "1901-1935 (Berlin doctorate, habilitation, and professorship)"
+      },
+      "primary_source_url": "https://gdz.sub.uni-goettingen.de/download/pdf/PPN37721857X_0025/LOG_0014.pdf",
+      "source_provenance_status": "verified-public-scan",
+      "target_scope": "supporting-lemma",
+      "target_scope_note": "Finite-coloring combinatorial supporting lemma (Hilfssatz, p. 114-115) giving an explicit finite bound N(r) forcing monochromatic positive x + y = z; excludes the paper's full modular congruence theorem.",
+      "constructive_status": "intuitionistically-valid-finite-combinatorics",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Non-constructive pigeonhole principle over unindexed sets"
+      ],
+      "existing_lean_formalization_check": "Small-case Schur numbers appear in external SAT/combinatorics projects; no dependency-free arbitrary-color constructive Hilfssatz in Lean 4 Init.",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    },
+    {
+      "id": "H03",
+      "category": "historical-foundational",
+      "title": "Ein Satz über Untermengen einer endlichen Menge",
+      "authors": [
+        "Emanuel Sperner"
+      ],
+      "year_lecture_or_submission": "1927",
+      "year_published": "1928",
+      "date_reconciliation": "Received (Eingegangen) 17 November 1927; published in Mathematische Zeitschrift volume 27 (1928), pp. 544-548.",
+      "venue": "Mathematische Zeitschrift 27, 544-548",
+      "dach_connection": {
+        "institutions": [
+          "Universität Hamburg"
+        ],
+        "location": "Hamburg, Germany",
+        "period": "1925-1928 (doctoral studies under Wilhelm Blaschke and Otto Schreier; later professor in Königsberg, Bonn, and Hamburg)"
+      },
+      "primary_source_url": "https://gdz.sub.uni-goettingen.de/download/pdf/PPN266833020_0027/LOG_0034.pdf",
+      "source_provenance_status": "verified-public-scan",
+      "target_scope": "main-theorem-constructive-core",
+      "target_scope_note": "Antichain definitions over bitvector subsets of {0,...,n-1}, middle-layer construction, and upper bound by the middle binomial coefficient (separating the upper bound, middle-layer attainment, and equality characterization).",
+      "constructive_status": "intuitionistically-valid-finite-combinatorics",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Classical Finset decidability wrappers"
+      ],
+      "existing_lean_formalization_check": "Mathlib formalizes Sperner's theorem via Finset/LYM inequality; TNDLib statement package models duplicate-free bitvector antichains and explicit binomial recursion in Init.",
+      "readiness_state": "statement-mapped-package",
+      "mission_id": null,
+      "package_path": "tests/packages/H03_Sperner.lean"
+    },
+    {
+      "id": "H04",
+      "category": "historical-foundational",
+      "title": "Neuer Beweis für die Invarianz der Dimensionszahl und des Gebietes",
+      "authors": [
+        "Emanuel Sperner"
+      ],
+      "year_lecture_or_submission": "1928",
+      "year_published": "1928",
+      "date_reconciliation": "Submitted as Sperner's Hamburg doctoral dissertation (1928) and published in Abhandlungen aus dem Mathematischen Seminar der Universität Hamburg 6 (1928), pp. 265-272.",
+      "venue": "Abhandlungen aus dem Mathematischen Seminar der Universität Hamburg 6, 265-272",
+      "dach_connection": {
+        "institutions": [
+          "Universität Hamburg (Mathematisches Seminar)"
+        ],
+        "location": "Hamburg, Germany",
+        "period": "1928 (Dr. rer. nat. dissertation)"
+      },
+      "primary_source_url": "https://link.springer.com/article/10.1007/BF02940617",
+      "source_provenance_status": "publisher-record-verified-fulltext-pending",
+      "target_scope": "supporting-lemma",
+      "target_scope_note": "Restricted to the finite 2D simplicial parity/labeling lemma with explicit boundary conditions; excludes the topological invariance of dimension and domain theorems.",
+      "constructive_status": "intuitionistically-valid-finite-fragment",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Brouwer fixed-point compactness arguments on R^n"
+      ],
+      "existing_lean_formalization_check": "Various 1D/2D Sperner lemma formalizations exist in Mathlib/external repositories; blocked in TNDLib pending verbatim primary-text check and explicit simplicial triangulation data structures.",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    },
+    {
+      "id": "H05",
+      "category": "historical-foundational",
+      "title": "Beweis einer Baudetschen Vermutung",
+      "authors": [
+        "Bartel Leendert van der Waerden"
+      ],
+      "year_lecture_or_submission": "1927",
+      "year_published": "1927",
+      "date_reconciliation": "Presented following discussions in Hamburg (1926/27 with Artin and Schreier) and published in Nieuw Archief voor Wiskunde (2) 15 (issue dated 1927, volume bound 1927/28), pp. 212-216.",
+      "venue": "Nieuw Archief voor Wiskunde (2) 15, 212-216",
+      "dach_connection": {
+        "institutions": [
+          "Georg-August-Universität Göttingen",
+          "Universität Hamburg",
+          "Universität Leipzig",
+          "Universität Zürich"
+        ],
+        "location": "Göttingen, Hamburg, and Leipzig, Germany; Zurich, Switzerland",
+        "period": "1924-1927 (Göttingen/Hamburg postdoctoral research), 1931-1945 (Leipzig), 1951-1972 (Zurich)"
+      },
+      "primary_source_url": "https://resolver.kb.nl/resolve?urn=MMKWG01:022157001:00228",
+      "source_provenance_status": "verified-public-scan",
+      "target_scope": "main-theorem-constructive-core",
+      "target_scope_note": "Explicit finite double-induction bound W(k, r) guaranteeing a monochromatic length-k arithmetic progression with positive common difference within {1,...,W(k,r)}.",
+      "constructive_status": "intuitionistically-valid-primitive-recursive-bound",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Topological/ultrafilter compactness arguments"
+      ],
+      "existing_lean_formalization_check": "Not in Lean 4 Init; requires substantial finite block-coloring and double-induction prerequisites before statement-package promotion.",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    },
+    {
+      "id": "H06",
+      "category": "historical-foundational",
+      "title": "Studien zur Kombinatorik",
+      "authors": [
+        "Richard Rado"
+      ],
+      "year_lecture_or_submission": "1931",
+      "year_published": "1933",
+      "date_reconciliation": "Berlin doctoral dissertation (approved 1931, conferred 1933 under Issai Schur); received by Mathematische Zeitschrift 13 May 1932 and published in volume 36 (1933), pp. 424-470.",
+      "venue": "Mathematische Zeitschrift 36, 424-470",
+      "dach_connection": {
+        "institutions": [
+          "Friedrich-Wilhelms-Universität Berlin (now Humboldt-Universität zu Berlin)"
+        ],
+        "location": "Berlin, Germany",
+        "period": "1927-1933 (doctoral student and research assistant in Berlin)"
+      },
+      "primary_source_url": "https://edoc.hu-berlin.de/items/56771e92-8c93-4f3d-8d8e-06c0533466fa",
+      "source_provenance_status": "verified-public-scan",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Single-equation partition regularity specialization (nonzero integer coefficients with non-empty subset summing to zero, positive integer solutions avoiding zero trivialization).",
+      "constructive_status": "requires-constructive-reformulation-of-compactness-step",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "König's infinity lemma / infinitary compactness (via explicit finite Rado bound)"
+      ],
+      "existing_lean_formalization_check": "No dependency-free constructive formalization in Lean 4; blocked pending explicit finite-bound specialization and integer linear combination infrastructure.",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    },
+    {
+      "id": "H07",
+      "category": "historical-foundational",
+      "title": "Zur allgemeinen Kurventheorie",
+      "authors": [
+        "Karl Menger"
+      ],
+      "year_lecture_or_submission": "1926",
+      "year_published": "1927",
+      "date_reconciliation": "Submitted 1926; published in Fundamenta Mathematicae volume 10 (1927), pp. 96-115.",
+      "venue": "Fundamenta Mathematicae 10, 96-115",
+      "dach_connection": {
+        "institutions": [
+          "Universität Wien"
+        ],
+        "location": "Vienna, Austria",
+        "period": "1920-1936 (doctorate 1924 and professor of geometry 1927-1936 at the University of Vienna)"
+      },
+      "primary_source_url": "https://matwbn.icm.edu.pl/ksiazki/fm/fm10/fm1012.pdf",
+      "source_provenance_status": "verified-public-scan",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Finite graph vertex-cut / internally vertex-disjoint paths duality reformulated from Menger's topological curve-separation theorem (pp. 96-103), with explicit terminal non-adjacency conventions.",
+      "constructive_status": "intuitionistically-valid-finite-reformulation",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Point-set topological compactness on metric continua"
+      ],
+      "existing_lean_formalization_check": "Finite graph Menger theorem requires path-packing and separator infrastructure not yet present in TNDLib.",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    },
+    {
+      "id": "H08",
+      "category": "historical-foundational",
+      "title": "Beweis des Moessnerschen Satzes",
+      "authors": [
+        "Oskar Perron"
+      ],
+      "year_lecture_or_submission": "1951",
+      "year_published": "1952",
+      "date_reconciliation": "Presented at the Sitzung of 5 October 1951 (Jahrgang 1951 volume, printed 1952, pp. 31-34).",
+      "venue": "Sitzungsberichte der Mathematisch-Naturwissenschaftlichen Klasse der Bayerischen Akademie der Wissenschaften zu München 1951, 31-34",
+      "dach_connection": {
+        "institutions": [
+          "Ludwig-Maximilians-Universität München",
+          "Bayerische Akademie der Wissenschaften"
+        ],
+        "location": "Munich, Germany",
+        "period": "1922-1951 (professor of mathematics in Munich and Academy member)"
+      },
+      "primary_source_url": "https://archiv.badw.de/de/043542577/043542577.pdf",
+      "source_provenance_status": "verified-public-scan",
+      "target_scope": "main-theorem-constructive-core",
+      "target_scope_note": "Moessner delete-and-prefix-sum sieve specification, closed-form Pascal/binomial coefficient step invariants, and specialized rank-1/rank-2 power identities (n^1 and n^2 via odd-number prefix sums).",
+      "constructive_status": "intuitionistically-valid",
+      "classical_axioms_avoided": [
+        "Classical.choice"
+      ],
+      "existing_lean_formalization_check": "Coq/Agda formalizations of Moessner's theorem exist in literature; TNDLib provides an Init-only Lean 4 statement package.",
+      "readiness_state": "statement-mapped-package",
+      "mission_id": null,
+      "package_path": "tests/packages/H08_PerronMoessner.lean"
+    },
+    {
+      "id": "L01",
+      "category": "logic-and-foundations",
+      "title": "Über die Bausteine der mathematischen Logik",
+      "authors": [
+        "Moses Schönfinkel"
+      ],
+      "year_lecture_or_submission": "1920",
+      "year_published": "1924",
+      "date_reconciliation": "Presented before the Mathematische Gesellschaft in Göttingen on 7 December 1920; prepared for publication with Heinrich Behmann in March 1924 and published in Mathematische Annalen 92 (1924), pp. 305-316.",
+      "venue": "Mathematische Annalen 92, 305-316",
+      "dach_connection": {
+        "institutions": [
+          "Georg-August-Universität Göttingen",
+          "Mathematische Gesellschaft in Göttingen"
+        ],
+        "location": "Göttingen, Germany",
+        "period": "1914-1924 (research in Hilbert's Göttingen logic group; manuscript edited by Heinrich Behmann)"
+      },
+      "primary_source_url": "https://www.cip.ifi.lmu.de/~langeh/test/1924%20-%20Schoenfinkel%20-%20Ueber%20die%20Bausteine%20der%20mathematischen%20Logik.pdf",
+      "source_provenance_status": "verified-public-scan",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Typed, pointwise currying/uncurrying (§2, p. 306) and combinator reductions/eliminations for I, C (modern K), T, Z, S (§3-§4, pp. 308-312); excludes untyped syntactic bound-variable elimination metatheory.",
+      "constructive_status": "intuitionistically-valid",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Law of Excluded Middle"
+      ],
+      "existing_lean_formalization_check": "Typed combinators are standard in type theory; TNDLib statement package explicitly maps Schönfinkel's §3-§4 combinators (I, C, T, Z, S) and his reductions of I, T, Z from C and S.",
+      "readiness_state": "statement-mapped-package",
+      "mission_id": null,
+      "package_path": "tests/packages/L01_Schoenfinkel.lean"
+    },
+    {
+      "id": "L02",
+      "category": "logic-and-foundations",
+      "title": "Grundlagen der Kombinatorischen Logik (Teile I & II)",
+      "authors": [
+        "Haskell Brooks Curry"
+      ],
+      "year_lecture_or_submission": "1929",
+      "year_published": "1930",
+      "date_reconciliation": "Inaugural-Dissertation at Georg-August-Universität Göttingen (1929, supervised by David Hilbert and Paul Bernays); published in American Journal of Mathematics 52 (1930), Part I pp. 509-536, Part II pp. 789-834.",
+      "venue": "American Journal of Mathematics 52(3), 509-536 and 52(4), 789-834",
+      "dach_connection": {
+        "institutions": [
+          "Georg-August-Universität Göttingen"
+        ],
+        "location": "Göttingen, Germany",
+        "period": "1928-1929 (doctoral dissertation under Hilbert and Bernays, degree conferred 1930)"
+      },
+      "primary_source_url": "https://www.jstor.org/stable/2370619",
+      "source_provenance_status": "verified-publisher-scan",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Typed combinatory composition B, permutation C, duplicator W, and Part I finite combinator reduction/associativity laws (distinct from L01); excludes full untyped combinatory completeness metatheory.",
+      "constructive_status": "intuitionistically-valid",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Law of Excluded Middle"
+      ],
+      "existing_lean_formalization_check": "Held in screened backlog to avoid duplicating L01 pointwise combinators until syntactic combinatory terms and equality rules from Part I/II are modeled.",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    },
+    {
+      "id": "L03",
+      "category": "logic-and-foundations",
+      "title": "Zum Hilbertschen Aufbau der reellen Zahlen",
+      "authors": [
+        "Wilhelm Ackermann"
+      ],
+      "year_lecture_or_submission": "1927",
+      "year_published": "1928",
+      "date_reconciliation": "Received (Eingegangen) 25 March 1927 with Göttingen byline; published in Mathematische Annalen volume 99 (1928), pp. 118-133.",
+      "venue": "Mathematische Annalen 99, 118-133",
+      "dach_connection": {
+        "institutions": [
+          "Georg-August-Universität Göttingen"
+        ],
+        "location": "Göttingen, Germany",
+        "period": "1924-1928 (doctoral student of David Hilbert 1925 and Göttingen collaborator)"
+      },
+      "primary_source_url": "https://eretrandre.org/rb/files/Ackermann1928_126.pdf",
+      "source_provenance_status": "verified-public-scan",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Original 3-argument function φ(a, b, n) (pp. 119-120) with Ackermann's initial value function α(a, n) giving φ(a, 0, 1) = α(a, 0) = 0, φ(a, 0, 2) = α(a, 1) = 1, and φ(a, 0, 3) = α(a, 2) = a (so φ(a, 0, n) = α(a, n-1) = a for n >= 3), level slices, and strict growth lemmas; excludes the metamathematical proof that φ escapes primitive recursion.",
+      "constructive_status": "intuitionistically-valid",
+      "classical_axioms_avoided": [
+        "Classical.choice"
+      ],
+      "existing_lean_formalization_check": "Mathlib defines the 2-argument Péter-Robinson Ackermann function; TNDLib statement package formalizes Ackermann's original 1928 3-variable function φ(a, b, n) with its exact base convention.",
+      "readiness_state": "statement-mapped-package",
+      "mission_id": null,
+      "package_path": "tests/packages/L03_Ackermann.lean"
+    },
+    {
+      "id": "L04",
+      "category": "logic-and-foundations",
+      "title": "Untersuchungen über das logische Schließen I & II",
+      "authors": [
+        "Gerhard Gentzen"
+      ],
+      "year_lecture_or_submission": "1933",
+      "year_published": "1935",
+      "date_reconciliation": "Submitted as Gentzen's Göttingen doctoral dissertation in 1933 (received by Mathematische Zeitschrift 30 December 1933); published in Mathematische Zeitschrift volume 39, Part I (issue printed 1934, pp. 176-210) and Part II (issue printed 1935, pp. 405-431; bound volume dated 1935).",
+      "venue": "Mathematische Zeitschrift 39, 176-210 and 405-431",
+      "dach_connection": {
+        "institutions": [
+          "Georg-August-Universität Göttingen"
+        ],
+        "location": "Göttingen, Germany",
+        "period": "1929-1943 (doctoral dissertation under Hermann Weyl and Paul Bernays; assistant to David Hilbert)"
+      },
+      "primary_source_url": "https://geodesic.mathdoc.fr/item/MZ_1935__39_168546/",
+      "source_provenance_status": "verified-public-scan",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Propositional intuitionistic sequent calculus LJ structural rules and Hauptsatz (cut elimination) restricted to the propositional fragment; excludes first-order eigenvariable substitution and arithmetic consistency.",
+      "constructive_status": "intuitionistically-valid-syntactic-induction",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Law of Excluded Middle"
+      ],
+      "existing_lean_formalization_check": "Blocked in TNDLib until inductive sequent derivation trees, multisets/lists with contraction, and lexicographic rank/grade induction are added.",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    },
+    {
+      "id": "L05",
+      "category": "logic-and-foundations",
+      "title": "Über formal unentscheidbare Sätze der Principia Mathematica und verwandter Systeme I",
+      "authors": [
+        "Kurt Gödel"
+      ],
+      "year_lecture_or_submission": "1930",
+      "year_published": "1931",
+      "date_reconciliation": "Announced in Königsberg in September 1930, abstract presented to the Vienna Academy in October 1930, full manuscript received (Eingegangen) 17 November 1930; published in Monatshefte für Mathematik und Physik 38 (1931), pp. 173-198.",
+      "venue": "Monatshefte für Mathematik und Physik 38, 173-198",
+      "dach_connection": {
+        "institutions": [
+          "Universität Wien",
+          "Österreichische Akademie der Wissenschaften"
+        ],
+        "location": "Vienna, Austria",
+        "period": "1924-1938 (doctorate 1930 and habilitation 1932 at the University of Vienna)"
+      },
+      "primary_source_url": "https://www.w-k-essler.de/pdfs/goedel.pdf",
+      "source_provenance_status": "verified-public-transcription-and-scan",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Faithful syntactic diagonalization lemma and abstract representation interface for Satz VI retaining Gödel's explicit ω-consistency hypothesis (not Rosser's later strengthening).",
+      "constructive_status": "intuitionistically-valid-syntactic-core",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Standard-model semantic truth assumptions"
+      ],
+      "existing_lean_formalization_check": "Long-term blocked in TNDLib on Gödel numbering, primitive recursive relation representability (Satz V), and formal proof-predicate verification.",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    },
+    {
+      "id": "L06",
+      "category": "logic-and-foundations",
+      "title": "Algebraische und logistische Untersuchungen über freie Verbände",
+      "authors": [
+        "Paul Lorenzen"
+      ],
+      "year_lecture_or_submission": "1950",
+      "year_published": "1951",
+      "date_reconciliation": "Received by The Journal of Symbolic Logic on 3 August 1950 (with Bonn institutional byline); published in volume 16, issue 2 (June 1951), pp. 81-106.",
+      "venue": "The Journal of Symbolic Logic 16(2), 81-106",
+      "dach_connection": {
+        "institutions": [
+          "Rheinische Friedrich-Wilhelms-Universität Bonn"
+        ],
+        "location": "Bonn, Germany",
+        "period": "1946-1956 (habilitation and professor at Bonn before founding the Erlangen School)"
+      },
+      "primary_source_url": "https://www.jstor.org/stable/2266681",
+      "source_provenance_status": "verified-publisher-scan-and-arxiv-translation",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Constructive additive and meet/join order laws from Lorenzen's 1951 investigation of lattice-ordered divisibility cones (§1, pp. 81-86), including additive order cancellation, meet/join universal properties, and relative primality; excludes infinitary inductive systems.",
+      "constructive_status": "intuitionistically-valid",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Zorn's Lemma / prime ideal theorem ( explicitly eliminated by Lorenzen)"
+      ],
+      "existing_lean_formalization_check": "Mathlib formalizes classical lattice-ordered groups; TNDLib formalizes Lorenzen's explicit constructive LOrder cone with witness operations meet/join in Init.",
+      "readiness_state": "active-mission",
+      "mission_id": "mission-l06-lorenzen",
+      "package_path": "TNDLib/Lorenzen.lean"
+    },
+    {
+      "id": "M01",
+      "category": "modern-algorithms-and-certificates",
+      "title": "Certifying Algorithms",
+      "authors": [
+        "Ross M. McConnell",
+        "Kurt Mehlhorn",
+        "Stefan Näher",
+        "Pascal Schweitzer"
+      ],
+      "year_lecture_or_submission": "2010",
+      "year_published": "2011",
+      "date_reconciliation": "Circulated as MPI-INF report in 2010; published in Computer Science Review volume 5, issue 2 (May 2011), pp. 119-161.",
+      "venue": "Computer Science Review 5(2), 119-161",
+      "dach_connection": {
+        "institutions": [
+          "Max-Planck-Institut für Informatik (MPI-INF)",
+          "Universität des Saarlandes",
+          "Universität Trier"
+        ],
+        "location": "Saarbrücken and Trier, Germany",
+        "period": "2010-2011 (Mehlhorn and Schweitzer at MPI-INF/Saarland; Näher professor at University of Trier)"
+      },
+      "primary_source_url": "https://people.mpi-inf.mpg.de/~mehlhorn/ftp/CertifyingAlgorithms.pdf",
+      "source_provenance_status": "verified-author-manuscript-and-published-version",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Executable witness checkers and mismatch/non-occurrence certificates following §2 (pp. 121-125) and §9.5 (pp. 142-143), plus universal pattern-table falsifier certificates importing Mission H01's Cantor diagonal theorem.",
+      "constructive_status": "intuitionistically-valid-executable-checkers",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Non-constructive existence of mismatch positions"
+      ],
+      "existing_lean_formalization_check": "TNDLib formalizes the executable 2-character match checker, mismatch certificates, and cross-mission Cantor stream falsifier certificates in Init.",
+      "readiness_state": "active-mission",
+      "mission_id": "mission-m01-certifying",
+      "package_path": "TNDLib/Certifying.lean"
+    },
+    {
+      "id": "M02",
+      "category": "modern-algorithms-and-certificates",
+      "title": "ShockHash: Near Optimal-Space Minimal Perfect Hashing Beyond Brute-Force",
+      "authors": [
+        "Hans-Peter Lehmann",
+        "Peter Sanders",
+        "Stefan Walzer"
+      ],
+      "year_lecture_or_submission": "2023",
+      "year_published": "2025",
+      "date_reconciliation": "Posted as arXiv preprint 2308.09561 in August 2023 and presented at ALENEX 2024; extended journal article published in Algorithmica volume 87 (2025), pp. 427-461.",
+      "venue": "Algorithmica 87, 427-461",
+      "dach_connection": {
+        "institutions": [
+          "Karlsruher Institut für Technologie (KIT)"
+        ],
+        "location": "Karlsruhe, Germany",
+        "period": "2023-2025 (Institute of Theoretical Informatics, Algorithm Engineering group at KIT)"
+      },
+      "primary_source_url": "https://link.springer.com/article/10.1007/s00453-025-01321-z",
+      "source_provenance_status": "verified-open-access-publication-and-kit-repository",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Deterministic 1-bit two-choice hash selector certificates (§2-§3), collision-free slot assignment soundness, pseudoforest orientation certificates (in-degree <= 1), and explicit 2-key worked verification; excludes probabilistic threshold and space-lower-bound asymptotics.",
+      "constructive_status": "intuitionistically-valid-certificate-core",
+      "classical_axioms_avoided": [
+        "Classical.choice",
+        "Infinite probability measure axioms"
+      ],
+      "existing_lean_formalization_check": "No existing Lean 4 formalization of ShockHash cuckoo/pseudoforest selector certificates; TNDLib provides an Init-only statement package.",
+      "readiness_state": "statement-mapped-package",
+      "mission_id": null,
+      "package_path": "tests/packages/M02_ShockHash.lean"
+    },
+    {
+      "id": "M03",
+      "category": "modern-algorithms-and-certificates",
+      "title": "Certifying Induced Subgraphs in Large Graphs",
+      "authors": [
+        "Ulrich Meyer",
+        "Hung Tran",
+        "Konstantinos Tsakalidis"
+      ],
+      "year_lecture_or_submission": "2023",
+      "year_published": "2024",
+      "date_reconciliation": "Published in WALCOM 2023 (LNCS 13973, pp. 159-170, March 2023); extended journal version published in International Journal of Foundations of Computer Science 35 (2024).",
+      "venue": "WALCOM 2023, LNCS 13973, 159-170 (extended in Int. J. Found. Comput. Sci. 2024)",
+      "dach_connection": {
+        "institutions": [
+          "Goethe-Universität Frankfurt am Main"
+        ],
+        "location": "Frankfurt am Main, Germany",
+        "period": "2023-2024 (Algorithm Engineering group at Goethe University Frankfurt)"
+      },
+      "primary_source_url": "https://ae.cs.uni-frankfurt.de/public_files/walcom23.pdf",
+      "source_provenance_status": "verified-author-manuscript",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Threshold-graph iterative isolated/dominating vertex creation/elimination certificate checker (§3.2 of the 2023 WALCOM version); excludes I/O-model external-memory sorting bounds.",
+      "constructive_status": "intuitionistically-valid-certificate-core",
+      "classical_axioms_avoided": [
+        "Classical.choice"
+      ],
+      "existing_lean_formalization_check": "Screened backlog; awaiting finite induced-subgraph and degree-sequence primitives in TNDLib.",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    },
+    {
+      "id": "M04",
+      "category": "modern-algorithms-and-certificates",
+      "title": "Contraction Hierarchies: Faster and Simpler Hierarchical Routing in Road Networks",
+      "authors": [
+        "Robert Geisberger",
+        "Peter Sanders",
+        "Dominik Schultes",
+        "Daniel Delling"
+      ],
+      "year_lecture_or_submission": "2008",
+      "year_published": "2008",
+      "date_reconciliation": "Presented at the 7th International Workshop on Experimental Algorithms (WEA 2008, Provincetown, May/June 2008) and published in LNCS 5038 (2008), pp. 319-333.",
+      "venue": "WEA 2008, Lecture Notes in Computer Science 5038, 319-333",
+      "dach_connection": {
+        "institutions": [
+          "Universität Karlsruhe (TH) (now Karlsruher Institut für Technologie, KIT)"
+        ],
+        "location": "Karlsruhe, Germany",
+        "period": "2008 (Institute of Theoretical Informatics, Karlsruhe)"
+      },
+      "primary_source_url": "https://ai.dmi.unibas.ch/research/reading_group/geisberger-et-al-wea2008.pdf",
+      "source_provenance_status": "verified-public-pdf",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Shortcut unpacking weight/endpoint preservation and single-vertex contraction distance preservation with explicit witness-path certificates over Nat edge weights.",
+      "constructive_status": "intuitionistically-valid-finite-graph-fragment",
+      "classical_axioms_avoided": [
+        "Classical.choice"
+      ],
+      "existing_lean_formalization_check": "Screened backlog; blocked on finite weighted-path and path-concatenation primitives in TNDLib.",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    },
+    {
+      "id": "M05",
+      "category": "modern-algorithms-and-certificates",
+      "title": "Certifying 3-Edge-Connectivity",
+      "authors": [
+        "Kurt Mehlhorn",
+        "Adrian Neumann",
+        "Jens M. Schmidt"
+      ],
+      "year_lecture_or_submission": "2013",
+      "year_published": "2017",
+      "date_reconciliation": "Circulated as arXiv preprint 1304.1476 (2013) and presented at WG 2013; journal version published in Algorithmica volume 77, issue 2 (2017), pp. 309-335.",
+      "venue": "Algorithmica 77(2), 309-335",
+      "dach_connection": {
+        "institutions": [
+          "Max-Planck-Institut für Informatik (MPI-INF)",
+          "Technische Universität Ilmenau",
+          "Universität Rostock"
+        ],
+        "location": "Saarbrücken, Ilmenau, and Rostock, Germany",
+        "period": "2013-2017 (MPI-INF Saarbrücken and TU Ilmenau / University of Rostock)"
+      },
+      "primary_source_url": "https://algo.uni-rostock.de/storages/uni-rostock/Alle_IEF/Inf_ALGO/Publications/Mehlhorn2017.pdf",
+      "source_provenance_status": "verified-author-manuscript",
+      "target_scope": "restricted-constructive-fragment",
+      "target_scope_note": "Soundness of a finite construction-trace checker starting from K_2^3 via edge addition, edge-pair subdivision, and vertex splitting; excludes linear-time Mader tree decomposition construction.",
+      "constructive_status": "intuitionistically-valid-certificate-core",
+      "classical_axioms_avoided": [
+        "Classical.choice"
+      ],
+      "existing_lean_formalization_check": "Screened backlog; blocked on edge-identity multigraph and cut-preservation infrastructure (simple Boolean adjacency graphs are insufficient for K_2^3).",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    },
+    {
+      "id": "M06",
+      "category": "modern-algorithms-and-certificates",
+      "title": "Local Flow Partitioning for Faster Edge Connectivity",
+      "authors": [
+        "Monika Henzinger",
+        "Satish Rao",
+        "Di Wang"
+      ],
+      "year_lecture_or_submission": "2017",
+      "year_published": "2020",
+      "date_reconciliation": "Presented at SODA 2017 (pp. 1919-1938) with arXiv preprint 1704.01254v1 (2017) and fixed revision v2 (2019); journal version published in SIAM Journal on Computing 49(1) (2020), pp. 1-36.",
+      "venue": "SIAM Journal on Computing 49(1), 1-36",
+      "dach_connection": {
+        "institutions": [
+          "Universität Wien",
+          "Institute of Science and Technology Austria (ISTA)"
+        ],
+        "location": "Vienna and Klosterneuburg, Austria",
+        "period": "2009-present (Henzinger professor at University of Vienna 2009-2023, subsequently ISTA)"
+      },
+      "primary_source_url": "https://arxiv.org/pdf/1704.01254v2",
+      "source_provenance_status": "verified-arxiv-v2-manuscript",
+      "target_scope": "supporting-lemma",
+      "target_scope_note": "Unit-Flow push/relabel mass-conservation invariant and terminal excess/level partition arithmetic lemmas (§3 of arXiv:1704.01254v2); excludes global O(m log^2 n) cut-finding runtime.",
+      "constructive_status": "intuitionistically-valid-arithmetic-invariant",
+      "classical_axioms_avoided": [
+        "Classical.choice"
+      ],
+      "existing_lean_formalization_check": "Screened backlog; blocked on finite residual network, vertex excess, and flow conservation models in TNDLib.",
+      "readiness_state": "screened-backlog",
+      "mission_id": null
+    }
+  ]
+}

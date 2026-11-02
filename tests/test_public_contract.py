@@ -152,7 +152,7 @@ def test_every_registered_task_matches_its_admission_policy_and_placeholder():
         for entry in json.loads(Path("audit/admission/policy.json").read_text())["task_files"]
     }
     assert {task["id"] for task in registry} == set(policy)
-    assert len(registry) == 7
+    assert len(registry) == 20
     for task in registry:
         entry = policy[task["id"]]
         text = Path(task["source_path"]).read_bytes()

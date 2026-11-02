@@ -146,6 +146,7 @@ from gate.verify.comparator import (
 from gate.verify.config import load_verify_config_at_sha
 from gate.verify.pr_files import PrFilesError, fetch_pr_files
 from gate.verify.prover_dispatch import filter_files_by_profile, resolve_prover_profile
+from orchestrator.governance import GovernanceError, load_governance
 
 _EXCLUDED_PREFIXES = (".lake/", ".choir/", ".github/", "skills/")
 _RESERVED_HEAD_FILES = frozenset(
@@ -345,10 +346,19 @@ def _resolve_pr_target(repo: str, pr: int) -> tuple[str, str, str, str, str] | s
             label["name"] for label in labels if isinstance(label, dict)
         }
         owner = repo.split("/", 1)[0]
+        try:
+            authorized_author = load_governance().is_maintainer(
+                author.get("login", ""), repo=repo
+            )
+        except GovernanceError:
+            authorized_author = (
+                isinstance(author.get("login"), str)
+                and author["login"].casefold() == owner.casefold()
+            )
         if (
             not isinstance(author, dict)
             or not isinstance(author.get("login"), str)
-            or author["login"].casefold() != owner.casefold()
+            or not authorized_author
             or issue_meta.get("state") != "OPEN"
             or "choir/task" not in label_names
         ):

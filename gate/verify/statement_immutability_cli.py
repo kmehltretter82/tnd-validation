@@ -42,6 +42,7 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+from pathlib import Path
 
 from gate.provers import ProverError
 from gate.verify.base_contents import detect_rename
@@ -53,6 +54,7 @@ from gate.verify.statement_immutability import (
     compare_declarations,
     count_base_declarations,
 )
+from gate.verify.tnd_fetch import is_verified_maintainer_checkout
 
 
 class _ExternalError(RuntimeError):
@@ -259,6 +261,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if any_failed:
         print()
+        if is_verified_maintainer_checkout(Path("."), base_sha, head_sha):
+            print(
+                "Maintainer PR checkout verified; declaration changes are "
+                "audited by tnd-audit and maintainer-regression."
+            )
+            return 0
         print(
             "PR touches the statement of a declaration present in the "
             "base version of a changed file. Per spec D2: the "

@@ -21,15 +21,25 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from gate.state.close_on_merge import parse_closing_refs
 from gate.verify.tnd_policy import rejected_paths
+from orchestrator.governance import (
+    has_maintainer_marker,
+    validate_governance,
+    validate_maintainer_pr_contract,
+)
 
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\Z")
 MAX_CHANGED_FILES = 8
 MAX_CHANGED_LINES = 2_000
 MAX_FILE_LINES = 1_000
+MAX_MAINTAINER_CHANGED_FILES = 64
+MAX_MAINTAINER_CHANGED_LINES = 10_000
+MAX_MAINTAINER_FILE_LINES = 5_000
 MAX_SOURCE_BYTES = 256 * 1024
 MAX_TOTAL_SOURCE_BYTES = 1024 * 1024
+MAINTAINER_MARKER_FILE = ".git/tnd-maintainer-pr.json"
 # Git's blob:limit omits objects whose size is at least the limit.  Adding one
 # includes every source accepted at MAX_SOURCE_BYTES while omitting larger ones.
 GIT_BLOB_LIMIT = MAX_SOURCE_BYTES + 1
@@ -133,8 +143,10 @@ def _integer(record: dict[str, Any], name: str) -> int:
     return value
 
 
-def trusted_metadata(repo: str, pr: int, base: str, head: str) -> list[Change]:
-    """Validate exact PR metadata and a deliberately small changed-file set."""
+def _trusted_metadata_with_mode(
+    repo: str, pr: int, base: str, head: str,
+) -> tuple[list[Change], bool]:
+    """Validate exact PR metadata for either proof mode or maintainer mode."""
     repo_parts = repo.split("/")
     if (
         not REPOSITORY.fullmatch(repo)
@@ -151,6 +163,11 @@ def trusted_metadata(repo: str, pr: int, base: str, head: str) -> list[Change]:
     base_record, head_record = metadata.get("base"), metadata.get("head")
     changed_files = metadata.get("changed_files")
     base_repo = base_record.get("repo") if isinstance(base_record, dict) else None
+    body = str(metadata.get("body") or "")
+    is_maintainer = has_maintainer_marker(body)
+    max_files = MAX_MAINTAINER_CHANGED_FILES if is_maintainer else MAX_CHANGED_FILES
+    max_file_lines = MAX_MAINTAINER_FILE_LINES if is_maintainer else MAX_FILE_LINES
+    max_total_lines = MAX_MAINTAINER_CHANGED_LINES if is_maintainer else MAX_CHANGED_LINES
     if (
         type(metadata.get("number")) is not int
         or metadata.get("number") != pr
@@ -164,7 +181,7 @@ def trusted_metadata(repo: str, pr: int, base: str, head: str) -> list[Change]:
         or base_repo.get("full_name") != repo
         or isinstance(changed_files, bool)
         or not isinstance(changed_files, int)
-        or not 1 <= changed_files <= MAX_CHANGED_FILES
+        or not 1 <= changed_files <= max_files
     ):
         raise ValueError("GitHub PR metadata differs from the trusted event or size policy")
 
@@ -188,7 +205,7 @@ def trusted_metadata(repo: str, pr: int, base: str, head: str) -> list[Change]:
             or path in seen
             or status not in {"added", "modified", "removed"}
             or lines != additions + deletions
-            or not 1 <= lines <= MAX_FILE_LINES
+            or not 1 <= lines <= max_file_lines
             or (status != "removed" and (not isinstance(oid, str) or not SHA.fullmatch(oid)))
             or (
                 status == "removed"
@@ -200,12 +217,61 @@ def trusted_metadata(repo: str, pr: int, base: str, head: str) -> list[Change]:
         seen.add(path)
         total_lines += lines
         changes.append(Change(path, status, additions, deletions, oid))
-    if total_lines > MAX_CHANGED_LINES:
+    if total_lines > max_total_lines:
         raise ValueError("proof submission changes too many lines")
-    refused = rejected_paths(change.path for change in changes)
-    if refused:
-        raise ValueError(f"proof submissions cannot change protected paths: {refused!r}")
+    if is_maintainer:
+        head_repo_rec = head_record.get("repo") if isinstance(head_record, dict) else None
+        head_repo = (
+            str(head_repo_rec.get("full_name") or "")
+            if isinstance(head_repo_rec, dict)
+            else ""
+        )
+        user_rec = metadata.get("user")
+        author = str(user_rec.get("login") or "") if isinstance(user_rec, dict) else ""
+        validate_maintainer_pr_contract(
+            repo=repo,
+            head_repo=head_repo,
+            base_branch=str(base_record.get("ref") or ""),
+            author=author,
+            body=body,
+            linked_issues=parse_closing_refs(body),
+            files=[change.path for change in changes],
+        )
+    else:
+        refused = rejected_paths(change.path for change in changes)
+        if refused:
+            raise ValueError(f"proof submissions cannot change protected paths: {refused!r}")
+    return changes, is_maintainer
+
+
+def trusted_metadata(repo: str, pr: int, base: str, head: str) -> list[Change]:
+    """Validate exact PR metadata and a deliberately small changed-file set."""
+    changes, _is_maintainer = _trusted_metadata_with_mode(repo, pr, base, head)
     return changes
+
+
+def is_verified_maintainer_checkout(checkout: Path, base: str, head: str) -> bool:
+    """Whether ``tnd_fetch`` verified ``(base, head)`` as a maintainer PR."""
+    marker = checkout / MAINTAINER_MARKER_FILE
+    if marker.is_symlink():
+        raise ValueError("maintainer PR marker must not be a symlink")
+    if not marker.is_file():
+        return False
+    try:
+        data = json.loads(marker.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise ValueError("invalid maintainer PR marker state") from error
+    if (
+        not isinstance(data, dict)
+        or data.get("mode") != "maintainer"
+        or data.get("base_sha") != base
+        or data.get("head_sha") != head
+        or not isinstance(data.get("pr"), int)
+        or isinstance(data.get("pr"), bool)
+        or data.get("pr") <= 0
+    ):
+        raise ValueError("invalid maintainer PR marker state")
+    return True
 
 
 def _check_checkout(checkout: Path, repo: str, base: str) -> Path:
@@ -255,7 +321,12 @@ def filtered_fetch(checkout: Path, pr: int, head: str) -> str:
 
 
 def verify_fetched(
-    checkout: Path, base: str, head: str, changes: list[Change],
+    checkout: Path,
+    base: str,
+    head: str,
+    changes: list[Change],
+    *,
+    allow_maintainer_paths: bool = False,
 ) -> int:
     """Match the fetched tree to API paths and require every accepted blob locally."""
     diff = _git(
@@ -275,16 +346,26 @@ def verify_fetched(
     expected = [change.path for change in changes]
     if len(paths) != len(set(paths)) or set(paths) != set(expected):
         raise ValueError("fetched Git diff differs from trusted changed-file metadata")
-    refused = rejected_paths(paths)
-    if refused:
-        raise ValueError(f"proof submissions cannot change protected paths: {refused!r}")
+    if allow_maintainer_paths:
+        if any(
+            not path or any(part in {"", ".", ".."} for part in path.split("/"))
+            for path in paths
+        ):
+            raise ValueError("maintainer PR contains an invalid path")
+    else:
+        refused = rejected_paths(paths)
+        if refused:
+            raise ValueError(f"proof submissions cannot change protected paths: {refused!r}")
 
+    allowed_modes = (b"100644", b"100755") if allow_maintainer_paths else (b"100644",)
     total_bytes = 0
     for change in changes:
         entry = _git(checkout, "ls-tree", "-z", head, "--", change.path)
         if change.status == "removed":
             if entry:
                 raise ValueError("GitHub reported a removal that remains in the fetched tree")
+            if change.path == ".choir/governance.json":
+                raise ValueError("maintainer PR must not delete .choir/governance.json")
             continue
         rows = [row for row in entry.split(b"\0") if row]
         if len(rows) != 1:
@@ -292,7 +373,7 @@ def verify_fetched(
         metadata, raw_path = rows[0].split(b"\t", 1)
         mode, kind, oid = metadata.split()
         if (
-            mode != b"100644"
+            mode not in allowed_modes
             or kind != b"blob"
             or raw_path.decode("utf-8") != change.path
             or oid.decode() != change.oid
@@ -310,6 +391,9 @@ def verify_fetched(
             ) from error
         if object_kind != b"blob" or not 0 < size <= MAX_SOURCE_BYTES:
             raise ValueError("accepted source blob exceeds the 256 KiB fetch policy")
+        if change.path == ".choir/governance.json":
+            raw_gov = _git(checkout, "cat-file", "blob", change.oid or "")
+            validate_governance(json.loads(raw_gov.decode("utf-8")))
         total_bytes += size
         if total_bytes > MAX_TOTAL_SOURCE_BYTES:
             raise ValueError("accepted source blobs exceed the 1 MiB aggregate fetch policy")
@@ -319,11 +403,28 @@ def verify_fetched(
 def prepare_submission(checkout: Path, repo: str, pr: int, base: str, head: str) -> dict[str, Any]:
     """Validate metadata, acquire the exact commit, and enforce path/type policy."""
     checkout = _check_checkout(checkout, repo, base)
-    changes = trusted_metadata(repo, pr, base, head)
+    marker = checkout / MAINTAINER_MARKER_FILE
+    with contextlib.suppress(OSError):
+        marker.unlink()
+    changes, is_maintainer = _trusted_metadata_with_mode(repo, pr, base, head)
     target = filtered_fetch(checkout, pr, head)
-    source_bytes = verify_fetched(checkout, base, head, changes)
+    source_bytes = verify_fetched(
+        checkout, base, head, changes, allow_maintainer_paths=is_maintainer,
+    )
+    if is_maintainer:
+        marker.write_text(
+            json.dumps(
+                {"mode": "maintainer", "pr": pr, "base_sha": base, "head_sha": head},
+                sort_keys=True,
+            ) + "\n",
+            encoding="utf-8",
+        )
     return {
-        "status": "filtered-proof-submission",
+        "status": (
+            "filtered-maintainer-submission"
+            if is_maintainer
+            else "filtered-proof-submission"
+        ),
         "scope": "risk-reduction-not-filesystem-quota",
         "head_sha": head,
         "base_sha": base,
