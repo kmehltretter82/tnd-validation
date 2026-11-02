@@ -330,9 +330,9 @@ def test_maintainer_pr_merges_through_lane_when_regression_and_audit_are_green(m
             for arg in args:
                 if "/reviews" in str(arg):
                     return "[[]]"
+                if str(arg).endswith("/pulls/12/merge"):
+                    return '{"merged": true}'
             return __import__("json").dumps([{"total_count": 1, "workflow_runs": [run]}])
-        if args[:2] == ("pr", "merge"):
-            return ""
         raise AssertionError(args)
 
     monkeypatch.setattr(prs, "_gh", gh)
@@ -345,8 +345,16 @@ def test_maintainer_pr_merges_through_lane_when_regression_and_audit_are_green(m
         actor="kmehltretter82",
         app_id=12345,
     )
-    assert calls[-1][:2] == ("pr", "merge")
-    assert "--delete-branch" in calls[-1]
+    assert calls[-1] == (
+        "api",
+        "--method",
+        "PUT",
+        "repos/kmehltretter82/tndlib/pulls/12/merge",
+        "-f",
+        "merge_method=squash",
+        "-f",
+        f"sha={HEAD}",
+    )
 
     # Without green maintainer-regression, a maintainer PR is refused.
     pr_without_reg = replace(

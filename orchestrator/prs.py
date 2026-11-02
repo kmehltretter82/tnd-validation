@@ -698,6 +698,23 @@ def merge_pr(
         repo, number, pr, prover=prover, force=force, actor=actor, app_id=app_id,
     )
 
+    if app_id is not None:
+        # `gh pr merge` aborts client-side when GraphQL `mergeStateStatus` is
+        # `BLOCKED` under an active `update` ruleset, before sending the merge
+        # request to GitHub where the App's ruleset bypass is evaluated. Call
+        # the REST merge endpoint directly with the pinned head SHA.
+        _gh(
+            "api",
+            "--method",
+            "PUT",
+            f"repos/{repo}/pulls/{number}/merge",
+            "-f",
+            f"merge_method={method}",
+            "-f",
+            f"sha={pr.head_sha}",
+        )
+        return
+
     args = ["pr", "merge", str(number), "--repo", repo, f"--{method}"]
     # Under spec D4 the head branch lives on the contributor's fork, which
     # the orchestrator has no write access to. Asking gh to delete it there
